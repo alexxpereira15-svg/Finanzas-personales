@@ -3,40 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefy 2026 - Registro Financiero Avanzado</title>
+    <title>Stefy 2026 - Planificador con Asistente de IA Financiera</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <!-- BARRA DE NAVEGACIÓN -->
     <header class="bg-indigo-700 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-2">
                 <span class="text-2xl font-bold tracking-tight">Stefy <span class="text-indigo-200">2026</span></span>
-                <span class="bg-indigo-600 text-xs px-2 py-1 rounded-full font-mono font-bold">Modo Inteligente</span>
+                <span class="bg-amber-400 text-slate-900 text-xs px-2 py-0.5 rounded-full font-bold">Asistente Activo 🤖</span>
             </div>
             <nav class="flex flex-wrap gap-2" id="main-nav">
                 <button onclick="switchTab('resumen')" id="btn-resumen" class="bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium transition">
                     📊 Vista General
                 </button>
                 <button onclick="switchTab('transacciones')" id="btn-transacciones" class="hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition">
-                    💸 Registrar Ingresos / Gastos
+                    💸 Registrar Movimientos
                 </button>
                 <button onclick="switchTab('deudas')" id="btn-deudas" class="hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition">
-                    💳 Mis Deudas y Calendario
+                    💳 Deudas e Intereses
                 </button>
             </nav>
         </div>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
         
-        <!-- SECCIÓN 1: VISTA GENERAL ANUAL / MENSUAL -->
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="text-xl">💡</span>
+                <h3 class="text-base font-bold text-amber-900">Recomendaciones y Estrategia de Pago Automática</h3>
+            </div>
+            <div id="ia-recommendations-container" class="space-y-2 text-sm text-slate-700">
+                Cargando análisis de flujos bancarios...
+            </div>
+        </div>
+
         <section id="section-resumen" class="space-y-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div>
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Filtrar por Mes</label>
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Mes de Análisis</label>
                     <select id="resumen-month-selector" onchange="updateAllViews()" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="todos">Todo el Año (2026)</option>
                         <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
@@ -61,21 +69,19 @@
                     <h3 class="text-2xl font-bold text-rose-600" id="card-deudas">$0.00</h3>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                    <p class="text-sm text-slate-500 font-medium">Dinero Disponible Neto</p>
+                    <p class="text-sm text-slate-500 font-medium">Efectivo Disponible</p>
                     <h3 class="text-2xl font-bold text-indigo-600" id="card-disponible">$0.00</h3>
                 </div>
             </div>
 
-            <!-- Gráfico transaccional -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h3 class="text-lg font-bold mb-4 text-slate-700">📊 Balance de Flujo de Caja Real Mensual</h3>
-                <div class="h-80 relative">
+                <h3 class="text-lg font-bold mb-4 text-slate-700">📊 Balance de Flujo de Caja</h3>
+                <div class="h-64 relative">
                     <canvas id="chartFlujoReal"></canvas>
                 </div>
             </div>
         </section>
 
-        <!-- SECCIÓN 2: BITÁCORA DE TRANSACCIONES -->
         <section id="section-transacciones" class="hidden space-y-6">
             <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <h3 class="text-lg font-bold text-slate-700">📝 Registro de Movimientos Reales</h3>
@@ -97,39 +103,37 @@
                                 <th class="p-3 text-center">Acción</th>
                             </tr>
                         </thead>
-                        <tbody id="table-transactions" class="divide-y divide-slate-100">
-                            <!-- Inyectado dinámicamente -->
-                        </tbody>
+                        <tbody id="table-transactions" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- SECCIÓN 3: GESTIÓN DE DEUDAS HISTÓRICAS -->
         <section id="section-deudas" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
                 <div class="flex justify-between items-center border-b pb-3">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-700">💳 Catálogo y Control de Pasivos Bancarios</h3>
-                        <p class="text-xs text-slate-400">Monitorea tus fechas límite, montos mínimos, recomendados y realiza abonos.</p>
+                        <h3 class="text-lg font-bold text-slate-700">💳 Control de Deudas y Costo de Interés</h3>
+                        <p class="text-xs text-slate-400">Ordenado automáticamente para mitigar pérdidas por intereses bancarios.</p>
                     </div>
                     <button onclick="openAddDeudaGeneralModal()" class="bg-indigo-600 text-white font-medium text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
-                        + Agregar Nueva Cuenta / Tarjeta
+                        + Nueva Cuenta / Tarjeta
                     </button>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm min-w-[900px]">
+                    <table class="w-full text-left text-sm min-w-[1000px]">
                         <thead>
                             <tr class="text-slate-400 font-medium border-b bg-slate-50">
                                 <th class="p-3">Acreedor / Cuenta</th>
-                                <th class="p-3 text-right">Límite / Total Inicial</th>
+                                <th class="p-3 text-center">Tasa Interés Anual</th>
+                                <th class="p-3 text-right">Monto Inicial</th>
                                 <th class="p-3 text-right">Pago Mínimo</th>
-                                <th class="p-3 text-right">Pago Recomendado</th>
-                                <th class="p-3 text-center">Fecha Límite</th>
+                                <th class="p-3 text-right">Pago No Generar Intereses</th>
+                                <th class="p-3 text-center">Día Límite</th>
                                 <th class="p-3 text-right">Total Abonado</th>
                                 <th class="p-3 text-right">Saldo Faltante</th>
-                                <th class="p-3 text-center">Acciones Rápidas</th>
+                                <th class="p-3 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="table-deudas-generales" class="divide-y divide-slate-100"></tbody>
@@ -140,9 +144,8 @@
 
     </main>
 
-    <!-- MODAL REGISTRAR TRANSACCIÓN (INGRESO / GASTO) -->
     <div id="modal-transaction" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white max-w-sm w-full rounded-xl shadow-xl border p-6 space-y-4">
+        <div class="bg-white max-w-sm w-full rounded-xl shadow-xl p-6 space-y-4">
             <h3 class="text-lg font-bold text-slate-700" id="tx-modal-title">Registrar Movimiento</h3>
             <input type="hidden" id="tx-type">
             <div class="space-y-3">
@@ -157,33 +160,32 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-slate-500 block mb-1">Día</label>
+                        <label class="text-xs font-bold text-slate-500 block mb-1">Día del mes</label>
                         <input type="number" id="tx-day" min="1" max="31" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                     </div>
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-500 block mb-1">Concepto o Descripción</label>
-                    <input type="text" id="tx-label" placeholder="Ej. Supermercado o Nómina" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="tx-label" placeholder="Ej. Quincena o Gasolina" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-500 block mb-1">Monto ($)</label>
-                    <input type="number" id="tx-amount" value="0" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" id="tx-amount" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeModal('modal-transaction')" class="px-4 py-2 border rounded-lg text-sm text-slate-500 hover:bg-slate-50">Cancelar</button>
-                <button onclick="saveTransaction()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Guardar Registro</button>
+                <button onclick="saveTransaction()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Guardar</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL REALIZAR ABONO A DEUDA -->
     <div id="modal-abono" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white max-w-sm w-full rounded-xl shadow-xl border p-6 space-y-4">
-            <h3 class="text-lg font-bold text-slate-700">Registrar Pago a Deuda</h3>
+        <div class="bg-white max-w-sm w-full rounded-xl shadow-xl p-6 space-y-4">
+            <h3 class="text-lg font-bold text-slate-700">Registrar Pago a Cuenta</h3>
             <input type="hidden" id="abono-deuda-idx">
             <div class="space-y-3">
-                <p class="text-sm text-slate-500 font-medium" id="abono-deuda-name">Cuenta: </p>
+                <p class="text-sm text-slate-500 font-medium" id="abono-deuda-name"></p>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="text-xs font-bold text-slate-500 block mb-1">Mes del Pago</label>
@@ -200,88 +202,83 @@
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto a abonar ($)</label>
-                    <input type="number" id="abono-amount" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto a depositar ($)</label>
+                    <input type="number" id="abono-amount" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeModal('modal-abono')" class="px-4 py-2 border rounded-lg text-slate-500 text-sm hover:bg-slate-50">Cancelar</button>
-                <button onclick="executeAbono()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">Confirmar Pago</button>
+                <button onclick="closeModal('modal-abono')" class="px-4 py-2 border rounded-lg text-slate-500 text-sm">Cancelar</button>
+                <button onclick="executeAbono()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm">Confirmar Abono</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL PARA AGREGAR DEUDA GENERAL NUEVA -->
     <div id="modal-deuda-general" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white max-w-md w-full rounded-xl shadow-xl border p-6 space-y-4">
-            <h3 class="text-lg font-bold text-slate-700">Nueva Cuenta de Deuda</h3>
+        <div class="bg-white max-w-md w-full rounded-xl shadow-xl p-6 space-y-4">
+            <h3 class="text-lg font-bold text-slate-700">Nueva Cuenta / Crédito</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="sm:col-span-2">
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Acreedor / Tarjeta</label>
-                    <input type="text" id="dg-input-label" placeholder="Ej. Nu, Liverpool, Auto" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Nombre de la Cuenta / Tarjeta</label>
+                    <input type="text" id="dg-input-label" placeholder="Ej. TDC Banamex, Liverpool" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto Total / Inicial</label>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Saldo Total Pendiente</label>
                     <input type="number" id="dg-input-total" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Fecha Límite (Día o Texto)</label>
-                    <input type="text" id="dg-input-fecha" placeholder="Ej. 10 de cada mes" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Tasa de Interés Anual (%)</label>
+                    <input type="number" id="dg-input-interes" placeholder="Ej. 45" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Pago Mínimo ($)</label>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Pago Mínimo del Mes</label>
                     <input type="number" id="dg-input-minimo" value="0" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Pago Recomendado (No Intereses)</label>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Pago Para No Generar Intereses</label>
                     <input type="number" id="dg-input-recomendado" value="0" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Día Límite de Pago de cada mes (Solo el Número)</label>
+                    <input type="number" id="dg-input-fecha" min="1" max="31" placeholder="Ej. 10" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeModal('modal-deuda-general')" class="px-4 py-2 border rounded-lg text-slate-500 text-sm hover:bg-slate-50">Cancelar</button>
-                <button onclick="saveDeudaGeneral()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">Registrar Cuenta</button>
+                <button onclick="closeModal('modal-deuda-general')" class="px-4 py-2 border rounded-lg text-slate-500 text-sm">Cancelar</button>
+                <button onclick="saveDeudaGeneral()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">Guardar Tarjeta</button>
             </div>
         </div>
     </div>
-
-    <footer class="bg-slate-100 border-t mt-12 py-4 text-center text-xs text-slate-400">
-        Stefy 2026 Financial Planner &bull; Control transaccional en tiempo real con alertas bancarias.
-    </footer>
 
     <script>
         const nombreMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-        // Datos cargados dinámicamente mapeando los mínimos y recomendados aproximados
+        // Datos ajustados con tasas de interés promedio reales para simular el motor de inteligencia financiera
         const defaultData = {
             deudasGenerales: [
-                { name: "AUTO", total: 100000, pagado: 31000, minimo: 4000, recomendado: 4000, fecha: "Ver contrato" },
-                { name: "LIVERPOOL", total: 21925, pagado: 9000, minimo: 1500, recomendado: 2800, fecha: "Día 16" },
-                { name: "PRESTAMO", total: 63208.23, pagado: 45571, minimo: 5879, recomendado: 5879, fecha: "Día 05" },
-                { name: "BANQUETERA", total: 134000, pagado: 0, minimo: 4500, recomendado: 4500, fecha: "Fijo" },
-                { name: "TDC NU", total: 11665.99, pagado: 0, minimo: 600, recomendado: 1200, fecha: "Día 10" },
-                { name: "TDC VISA", total: 1031, pagado: 0, minimo: 1031, recomendado: 1031, fecha: "Día 22" },
-                { name: "TDC MERCADO", total: 6077, pagado: 0, minimo: 400, recomendado: 900, fecha: "Día 15" }
+                { name: "LIVERPOOL", total: 21925, pagado: 9000, minimo: 1500, recomendado: 2800, fecha: 16, interes: 48 },
+                { name: "TDC NU", total: 11665.99, pagado: 0, minimo: 600, recomendado: 1200, fecha: 10, interes: 34 },
+                { name: "TDC VISA", total: 1031, pagado: 0, minimo: 1031, recomendado: 1031, fecha: 22, interes: 52 },
+                { name: "TDC MERCADO", total: 6077, pagado: 0, minimo: 400, recomendado: 900, fecha: 15, interes: 67 },
+                { name: "PRESTAMO", total: 63208.23, pagado: 45571, minimo: 5879, recomendado: 5879, fecha: 5, interes: 24 },
+                { name: "AUTO", total: 100000, pagado: 31000, minimo: 4000, recomendado: 4000, fecha: 1, interes: 14 },
+                { name: "BANQUETERA", total: 134000, pagado: 0, minimo: 4500, recomendado: 4500, fecha: 28, interes: 0 } // Sin interés
             ],
             transacciones: [
-                { month: 5, day: 15, type: 'Ingreso', label: 'Sueldo Primera Quincena Junio', amount: 12000 },
-                { month: 5, day: 16, type: 'Gasto', label: 'Súper Semanal Mercadito', amount: 850 }
+                { month: 5, day: 15, type: 'Ingreso', label: 'Primera quincena Junio', amount: 15000 },
+                { month: 5, day: 16, type: 'Gasto', label: 'Insumos básicos', amount: 950 }
             ]
         };
 
-        let appData = JSON.parse(localStorage.getItem('stefy_advanced_2026')) || defaultData;
+        let appData = JSON.parse(localStorage.getItem('stefy_ia_finance')) || defaultData;
         let chartInstance = null;
 
-        // DETECCIÓN AUTOMÁTICA DEL MES ACTUAL DEL RELOJ (JUNIO = 5)
         function initCurrentMonth() {
             const currentMonthIndex = new Date().getMonth(); 
-            const selector = document.getElementById('resumen-month-selector');
-            if(selector) {
-                selector.value = currentMonthIndex; // Se auto-selecciona Junio (u el mes real actual)
-            }
+            document.getElementById('resumen-month-selector').value = currentMonthIndex;
         }
 
         function saveToStorage() {
-            localStorage.setItem('stefy_advanced_2026', JSON.stringify(appData));
+            localStorage.setItem('stefy_ia_finance', JSON.stringify(appData));
             updateAllViews();
         }
 
@@ -290,16 +287,74 @@
             document.getElementById('section-transacciones').classList.add('hidden');
             document.getElementById('section-deudas').classList.add('hidden');
             document.getElementById(`section-${tabId}`).classList.remove('hidden');
-            
-            ['resumen', 'transacciones', 'deudas'].forEach(t => {
-                document.getElementById(`btn-${t}`).className = "hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition";
-            });
-            document.getElementById(`btn-${tabId}`).className = "bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium transition";
-            
-            if (tabId === 'resumen') renderCharts();
+            renderCharts();
         }
 
         const fCurrency = num => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num);
+
+        // MOTOR DE INTELIGENCIA Y RECOMENDACIONES FINANCIERAS
+        function generateIARecommendations() {
+            const container = document.getElementById('ia-recommendations-container');
+            const filtroMes = document.getElementById('resumen-month-selector').value;
+            
+            if (filtroMes === 'todos') {
+                container.innerHTML = `<p class="text-slate-600">Selecciona un mes específico para recibir asesoría sobre tus próximos vencimientos e ingresos libres.</p>`;
+                return;
+            }
+
+            // 1. Calcular dinero disponible real en el mes actual
+            let ingresosMes = 0;
+            let gastosMes = 0;
+            appData.transacciones.forEach(t => {
+                if(t.month == filtroMes) {
+                    if(t.type === 'Ingreso') ingresosMes += t.amount;
+                    if(t.type === 'Gasto' || t.type === 'Deuda') gastosMes += t.amount;
+                }
+            });
+            let disponibleReal = ingresosMes - gastosMes;
+
+            // 2. Analizar urgencia por fechas y costo por interés (Método Avalancha)
+            let hoyDia = new Date().getDate();
+            let alertasHTML = "";
+            let deudasPendientes = [];
+
+            appData.deudasGenerales.forEach(d => {
+                let faltante = d.total - d.pagado;
+                if (faltante > 0) {
+                    deudasPendientes.push(d);
+                }
+            });
+
+            // Ordenar deudas por mayor tasa de interés para la recomendación de abono
+            let deudasPorInteres = [...deudasPendientes].sort((a,b) => (b.interes || 0) - (a.interes || 0));
+
+            // Generar alertas de proximidad de fecha límite
+            let deudasUrgentes = deudasPendientes.filter(d => {
+                let diasParaVencer = d.fecha - hoyDia;
+                return (diasParaVencer >= 0 && diasParaVencer <= 5); // Vence en los próximos 5 días
+            });
+
+            if (deudasUrgentes.length > 0) {
+                alertasHTML += `<div class="bg-red-100 border-l-4 border-red-500 p-2 rounded text-red-900 font-medium mb-2">⚠️ ¡Atención! Tienes cuentas por vencer pronto:</div><ul class="list-disc list-inside mb-3 text-red-900">`;
+                deudasUrgentes.forEach(d => {
+                    alertasHTML += `<li><strong>${d.name}</strong> vence el día ${d.fecha} (Faltan ${d.fecha - hoyDia} días). Requiere pago mínimo de ${fCurrency(d.minimo)}.</li>`;
+                });
+                alertasHTML += `</ul>`;
+            }
+
+            // Consejos lógicos de distribución de ingresos
+            let sugerenciaDistribucion = "";
+            if (disponibleReal > 0 && deudasPorInteres.length > 0) {
+                let deudaMasCara = deudasPorInteres[0];
+                sugerenciaDistribucion = `<p class="text-slate-700">💰 Tienes un flujo libre de <strong>${fCurrency(disponibleReal)}</strong> en este momento. Basado en tus deudas, la cuenta más peligrosa por su tasa de interés es <strong>${deudaMasCara.name} (${deudaMasCara.interes}%)</strong>. Te recomendamos inyectar un abono extra aquí para evitar pagar recargos innecesarios.</p>`;
+            } else if (disponibleReal <= 0 && deudasPendientes.length > 0) {
+                sugerenciaDistribucion = `<p class="text-amber-800 font-medium font-sans">⚠️ Tu saldo disponible en el mes está en ceros o negativo. Si vas a meter un ingreso pronto (por ejemplo a fin de mes), guárdalo prioritariamente para cubrir los pagos mínimos obligatorios y evitar penalizaciones de historial.</p>`;
+            } else {
+                sugerenciaDistribucion = `<p class="text-emerald-800 font-medium">✨ ¡Felicidades! No tienes deudas pendientes de pago detectadas para este período analizado.</p>`;
+            }
+
+            container.innerHTML = alertasHTML + sugerenciaDistribucion;
+        }
 
         function updateAllViews() {
             const filtroMes = document.getElementById('resumen-month-selector').value;
@@ -318,11 +373,9 @@
             document.getElementById('card-deudas').innerText = fCurrency(totDeudas);
             document.getElementById('card-disponible').innerText = fCurrency(totIngresos - (totGastos + totDeudas));
 
-            // Renderizar transacciones con Día/Mes ordenados
+            // Transacciones
             const tbodyTX = document.getElementById('table-transactions');
             tbodyTX.innerHTML = '';
-            
-            // Filtrar movimientos para mostrar en la lista
             appData.transacciones.forEach((t, idx) => {
                 if (filtroMes === 'todos' || t.month == filtroMes) {
                     let badgeColor = t.type === 'Ingreso' ? 'bg-emerald-100 text-emerald-800' : (t.type === 'Gasto' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800');
@@ -332,47 +385,41 @@
                             <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${badgeColor}">${t.type}</span></td>
                             <td class="p-3 text-slate-700">${t.label}</td>
                             <td class="p-3 text-right font-mono font-bold text-slate-900">${fCurrency(t.amount)}</td>
-                            <td class="p-3 text-center">
-                                <button onclick="deleteTransaction(${idx})" class="text-rose-400 hover:text-rose-600 font-medium">Eliminar</button>
-                            </td>
+                            <td class="p-3 text-center"><button onclick="deleteTransaction(${idx})" class="text-rose-500 hover:underline">Eliminar</button></td>
                         </tr>
                     `;
                 }
             });
 
-            // Renderizar Deudas con sus campos nuevos solicitados
+            // Deudas Generales con campo Interés
             const tbodyDG = document.getElementById('table-deudas-generales');
             tbodyDG.innerHTML = '';
             appData.deudasGenerales.forEach((d, idx) => {
                 let faltante = d.total - d.pagado;
                 tbodyDG.innerHTML += `
-                    <tr class="hover:bg-slate-50/50 transition">
-                        <td class="p-3 font-semibold text-indigo-900">${d.name}</td>
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-700">${d.name}</td>
+                        <td class="p-3 text-center font-bold text-indigo-600 bg-indigo-50/40">${d.interes || 0}%</td>
                         <td class="p-3 text-right text-slate-500 font-mono">${fCurrency(d.total)}</td>
-                        <td class="p-3 text-right text-amber-700 font-medium font-mono">${fCurrency(d.minimo || 0)}</td>
-                        <td class="p-3 text-right text-teal-700 font-semibold font-mono">${fCurrency(d.recomendado || 0)}</td>
-                        <td class="p-3 text-center"><span class="bg-slate-100 text-slate-600 font-medium px-2 py-1 rounded text-xs border">${d.fecha || 'N/A'}</span></td>
-                        <td class="p-3 text-right text-emerald-600 font-medium font-mono">${fCurrency(d.pagado)}</td>
-                        <td class="p-3 text-right text-rose-600 font-bold font-mono">${fCurrency(faltante)}</td>
+                        <td class="p-3 text-right text-amber-600 font-mono font-bold">${fCurrency(d.minimo || 0)}</td>
+                        <td class="p-3 text-right text-emerald-600 font-mono font-bold">${fCurrency(d.recomendado || 0)}</td>
+                        <td class="p-3 text-center"><span class="bg-slate-100 px-2 py-1 rounded text-xs">Día ${d.fecha || 'N/A'}</span></td>
+                        <td class="p-3 text-right text-teal-600 font-mono font-bold">${fCurrency(d.pagado)}</td>
+                        <td class="p-3 text-right text-rose-600 font-mono font-bold">${fCurrency(faltante)}</td>
                         <td class="p-3 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <button onclick="openAbonoModal(${idx})" class="bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-emerald-700 shadow-sm transition">
-                                    💸 Abonar
-                                </button>
-                                <button onclick="deleteDeudaGeneral(${idx})" class="text-slate-300 hover:text-rose-600 transition p-1 text-xs">❌</button>
-                            </div>
+                            <button onclick="openAbonoModal(${idx})" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-emerald-700">Abonar</button>
                         </td>
                     </tr>
                 `;
             });
+
+            generateIARecommendations();
         }
 
-        // CONTROL DE MODAL PARA TRANSACCIONES
+        // CONTROL DE MODALES
         function openTransactionModal(type) {
             document.getElementById('tx-type').value = type;
             document.getElementById('tx-modal-title').innerText = `Registrar ${type}`;
-            document.getElementById('tx-label').value = '';
-            document.getElementById('tx-amount').value = '';
             document.getElementById('tx-month').value = new Date().getMonth();
             document.getElementById('tx-day').value = new Date().getDate();
             document.getElementById('modal-transaction').classList.remove('hidden');
@@ -381,28 +428,20 @@
         function saveTransaction() {
             const type = document.getElementById('tx-type').value;
             const month = parseInt(document.getElementById('tx-month').value);
-            const day = parseInt(document.getElementById('tx-day').value) || new Date().getDate();
-            const label = document.getElementById('tx-label').value || `Movimiento de ${type}`;
+            const day = parseInt(document.getElementById('tx-day').value) || 1;
+            const label = document.getElementById('tx-label').value || 'Movimiento';
             const amount = parseFloat(document.getElementById('tx-amount').value) || 0;
 
-            if(amount <= 0) return alert("Monto inválido.");
-
+            if (amount <= 0) return alert("Monto no válido.");
             appData.transacciones.push({ month, day, type, label, amount });
             closeModal('modal-transaction');
             saveToStorage();
         }
 
-        function deleteTransaction(idx) {
-            appData.transacciones.splice(idx, 1);
-            saveToStorage();
-        }
-
-        // EJECUTAR ABONO DIRECTO
         function openAbonoModal(idx) {
-            const deuda = appData.deudasGenerales[idx];
+            const d = appData.deudasGenerales[idx];
             document.getElementById('abono-deuda-idx').value = idx;
-            document.getElementById('abono-deuda-name').innerText = `Abonar a: ${deuda.name} (Restante: ${fCurrency(deuda.total - deuda.pagado)})`;
-            document.getElementById('abono-amount').value = '';
+            document.getElementById('abono-deuda-name').innerText = `Abonar a ${d.name} (Saldo actual: ${fCurrency(d.total - d.pagado)})`;
             document.getElementById('abono-month').value = new Date().getMonth();
             document.getElementById('abono-day').value = new Date().getDate();
             document.getElementById('modal-abono').classList.remove('hidden');
@@ -411,94 +450,70 @@
         function executeAbono() {
             const idx = document.getElementById('abono-deuda-idx').value;
             const month = parseInt(document.getElementById('abono-month').value);
-            const day = parseInt(document.getElementById('abono-day').value) || new Date().getDate();
+            const day = parseInt(document.getElementById('abono-day').value) || 1;
             const amount = parseFloat(document.getElementById('abono-amount').value) || 0;
 
-            if(amount <= 0) return alert("Por favor ingresa un monto válido.");
-
+            if (amount <= 0) return alert("Monto inválido.");
             appData.deudasGenerales[idx].pagado += amount;
-
             appData.transacciones.push({
-                month,
-                day,
-                type: 'Deuda',
-                label: `Abono real: ${appData.deudasGenerales[idx].name}`,
-                amount
+                month, day, type: 'Deuda', label: `Abono real: ${appData.deudasGenerales[idx].name}`, amount
             });
-
             closeModal('modal-abono');
             saveToStorage();
         }
 
-        // AGREGAR CUENTAS DESDE CERO
         function openAddDeudaGeneralModal() {
-            document.getElementById('dg-input-label').value = '';
-            document.getElementById('dg-input-total').value = '';
-            document.getElementById('dg-input-fecha').value = '';
-            document.getElementById('dg-input-minimo').value = '0';
-            document.getElementById('dg-input-recomendado').value = '0';
             document.getElementById('modal-deuda-general').classList.remove('hidden');
         }
 
         function saveDeudaGeneral() {
-            const name = document.getElementById('dg-input-label').value || "Nueva Tarjeta";
+            const name = document.getElementById('dg-input-label').value || "Nueva Cuenta";
             const total = parseFloat(document.getElementById('dg-input-total').value) || 0;
-            const fecha = document.getElementById('dg-input-fecha').value || "No especificada";
+            const interes = parseFloat(document.getElementById('dg-input-interes').value) || 0;
             const minimo = parseFloat(document.getElementById('dg-input-minimo').value) || 0;
             const recomendado = parseFloat(document.getElementById('dg-input-recomendado').value) || 0;
+            const fecha = parseInt(document.getElementById('dg-input-fecha').value) || 15;
 
-            appData.deudasGenerales.push({ name, total, pagado: 0, minimo, recomendado, fecha });
+            appData.deudasGenerales.push({ name, total, pagado: 0, minimo, recomendado, fecha, interes });
             closeModal('modal-deuda-general');
             saveToStorage();
         }
 
-        function deleteDeudaGeneral(idx) {
-            if(confirm("¿Quitar esta cuenta permanentemente?")) {
-                appData.deudasGenerales.splice(idx, 1);
-                saveToStorage();
-            }
+        function deleteTransaction(idx) {
+            appData.transacciones.splice(idx, 1);
+            saveToStorage();
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-        // RENDERIZADO GRÁFICO DINÁMICO
         function renderCharts() {
             const canvas = document.getElementById('chartFlujoReal');
             if(!canvas) return;
             const ctx = canvas.getContext('2d');
-            
             const ingMensuales = Array(12).fill(0);
             const egMensuales = Array(12).fill(0);
 
             appData.transacciones.forEach(t => {
-                if (t.type === 'Ingreso') {
-                    ingMensuales[t.month] += t.amount;
-                } else {
-                    egMensuales[t.month] += t.amount;
-                }
+                if (t.type === 'Ingreso') ingMensuales[t.month] += t.amount;
+                else egMensuales[t.month] += t.amount;
             });
 
             if (chartInstance) chartInstance.destroy();
-
             chartInstance = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                     datasets: [
-                        { label: 'Ingresos Reales', data: ingMensuales, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3, fill: true },
-                        { label: 'Gastos + Pagos Reales', data: egMensuales, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', tension: 0.3, fill: true }
+                        { label: 'Ingresos', data: ingMensuales, backgroundColor: '#10b981' },
+                        { label: 'Egresos', data: egMensuales, backgroundColor: '#f59e0b' }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
         window.onload = () => {
-            initCurrentMonth(); // Detecta automáticamente que es Junio
+            initCurrentMonth();
             updateAllViews();
             renderCharts();
         };
