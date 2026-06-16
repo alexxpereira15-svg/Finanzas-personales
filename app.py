@@ -1,34 +1,32 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+import datetime
 
-# 1. CONFIGURACIÓN DE LA PÁGINA (UI/UX Premium & Mobile-First)
+# 1. CONFIGURACIÓN DE LA PÁGINA (UI/UX Móvil y Tema Oscuro)
 st.set_page_config(
-    page_title="Smart Finance Engine",
-    page_icon="⚡",
+    page_title="Control Financiero Inteligente",
+    page_icon="⚖️",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS avanzados para el Semáforo Financiero y tarjetas interactivas
+# Estilos CSS para simular una app nativa móvil con botones de acción limpios
 st.markdown("""
     <style>
     .reportview-container .main .block-container { max-width: 480px; padding-top: 1rem; }
-    .stButton>button { width: 100%; border-radius: 10px; height: 3em; background-color: #3b82f6; color: white; font-weight: bold; }
-    
+    .stButton>button { width: 100%; border-radius: 8px; height: 2.8em; font-weight: bold; }
     div.data-card {
         background-color: #1e293b;
         border-radius: 12px;
         padding: 16px;
         margin-bottom: 12px;
         border-left: 5px solid #3b82f6;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     div.cuenta-item {
         background-color: #0f172a;
-        padding: 10px 14px;
+        padding: 12px;
         border-radius: 8px;
-        margin-top: 6px;
+        margin-top: 8px;
         border: 1px solid #334155;
     }
     .flex-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
@@ -39,261 +37,209 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. SISTEMA DE PERSISTENCIA EN MEMORIA (Base de Datos Dinámica del Usuario)
-if 'ingresos_extras' not in st.session_state:
-    st.session_state.ingresos_extras = 0.0
+# 2. SISTEMA DE PERSISTENCIA (Base de Datos Viva en la Sesión)
+if 'disponible_caja' not in st.session_state:
+    st.session_state.disponible_caja = 0.0
 
-# Inicialización de Gastos Fijos Reales si no existen en la sesión
-if 'gastos_fijos_db' not in st.session_state:
-    st.session_state.gastos_fijos_db = [
-        {"concepto": "Gasolina (apoyo mamá)", "monto": 800.00, "dia_vencimiento": 5},
-        {"concepto": "Gym", "monto": 499.00, "dia_vencimiento": 10},
-        {"concepto": "Internet", "monto": 399.00, "dia_vencimiento": 12},
-        {"concepto": "Melimas", "monto": 399.00, "dia_vencimiento": 15},
-        {"concepto": "Celular (Cargo Nu)", "monto": 289.00, "dia_vencimiento": 19},
-        {"concepto": "Transporte", "monto": 240.00, "dia_vencimiento": 20},
-        {"concepto": "CFE (Promedio)", "monto": 200.00, "dia_vencimiento": 25},
-        {"concepto": "Amazon Prime + Music", "monto": 99.00, "dia_vencimiento": 4},
-        {"concepto": "Spotify / plan dúo", "monto": 97.00, "dia_vencimiento": 19}
+if 'historial_pagos' not in st.session_state:
+    st.session_state.historial_pagos = []
+
+# Inicializamos tus deudas reales (Corte Junio 2026) si no existen
+if 'deudas_vivas' not in st.session_state:
+    st.session_state.deudas_vivas = [
+        {"nombre": "Préstamo", "saldo": 48630.87, "tasa": 21.12, "minimo": 3500.00, "dia_limite": 9, "es_msi": False},
+        {"nombre": "Tarjeta Santander", "saldo": 40284.29, "tasa": 21.76, "minimo": 1500.00, "dia_limite": 1, "es_msi": False},
+        {"nombre": "ADO Nu (Último mes!)", "saldo": 734.00, "tasa": 0.00, "minimo": 734.00, "dia_limite": 19, "es_msi": True},
+        {"nombre": "Fijo Nu 1", "saldo": 1081.62, "tasa": 0.00, "minimo": 540.81, "dia_limite": 19, "es_msi": True},
+        {"nombre": "Fijo Nu 2", "saldo": 2630.97, "tasa": 0.00, "minimo": 438.49, "dia_limite": 19, "es_msi": True},
+        {"nombre": "Compra Mercado Libre", "saldo": 839.34, "tasa": 44.00, "minimo": 279.78, "dia_limite": 16, "es_msi": False}
     ]
 
-# Inicialización de Deudas Reales (Corte a Junio 2026) si no existen en la sesión
-if 'deudas_db' not in st.session_state:
-    st.session_state.deudas_db = [
-        {"nombre": "Préstamo", "saldo_total": 48630.87, "tasa_interes_anual": 21.12, "pago_minimo": 3500.00, "fecha_limite_dia": 9, "es_msi": False},
-        {"nombre": "Tarjeta Santander", "saldo_total": 40284.29, "tasa_interes_anual": 21.76, "pago_minimo": 1500.00, "fecha_limite_dia": 1, "es_msi": False}, # Mínimo estimado prudente
-        {"nombre": "ADO Nu (Último mes!)", "saldo_total": 734.00, "tasa_interes_anual": 0.00, "pago_minimo": 734.00, "fecha_limite_dia": 19, "es_msi": True},
-        {"nombre": "Fijo Nu", "saldo_total": 1081.62, "tasa_interes_anual": 0.00, "pago_minimo": 540.81, "fecha_limite_dia": 19, "es_msi": True},
-        {"nombre": "Fijo Nu 2", "saldo_total": 2630.97, "tasa_interes_anual": 0.00, "pago_minimo": 438.49, "fecha_limite_dia": 19, "es_msi": True},
-        {"nombre": "Compra Mercado", "saldo_total": 839.34, "tasa_interes_anual": 44.00, "pago_minimo": 279.78, "fecha_limite_dia": 16, "es_msi": False}
+# Inicializamos tus gastos operativos fijos de vida
+if 'gastos_vivos' not in st.session_state:
+    st.session_state.gastos_vivos = [
+        {"concepto": "Gasolina (apoyo mamá)", "monto": 800.00, "dia": 5, "pagado": False},
+        {"concepto": "Gym", "monto": 499.00, "dia": 10, "pagado": False},
+        {"concepto": "Internet", "monto": 399.00, "dia": 12, "pagado": False},
+        {"concepto": "Melimas", "monto": 399.00, "dia": 15, "pagado": False},
+        {"concepto": "Celular (Nu)", "monto": 289.00, "dia": 19, "pagado": False},
+        {"concepto": "Transporte", "monto": 240.00, "dia": 20, "pagado": False},
+        {"concepto": "CFE (Luz)", "monto": 200.00, "dia": 25, "pagado": False},
+        {"concepto": "Amazon Prime", "monto": 99.00, "dia": 4, "pagado": False},
+        {"concepto": "Spotify / plan dúo", "monto": 97.00, "dia": 19, "pagado": False}
     ]
 
-INGRESO_FIJO_Q = 5000.00
+# 3. INTERFAZ Y FLUJO DE OPERACIÓN
+st.title("⚖️ Sistema Anti-Desastre Financiero")
+st.caption("Gestión transaccional en tiempo real basada en prioridades")
 
-# 3. MOTOR DE INTELIGENCIA Y ALGORITMOS (Presupuesto Base Cero Dinámico)
-def procesar_fase_a_detallada(quincena_actual):
-    alertas = []
+# --- MÓDULO 1: REGISTRO DE INGRESOS MANUALES ---
+st.markdown("### 📥 1. Registrar Ingreso Recibido")
+with st.container():
+    st.markdown('<div class="data-card" style="border-left-color: #10b981;">', unsafe_allow_html=True)
+    col_fecha, col_monto = st.columns([1, 1])
+    with col_fecha:
+        fecha_ingreso = st.date_input("Fecha de hoy", datetime.date.today())
+    with col_monto:
+        monto_ingreso = st.number_input("Monto Recibido ($)", min_value=0.0, step=500.0, key="monto_ing_nuevo")
     
-    # Dividir gastos fijos mensuales equitativamente o por quincena según su vencimiento diario
-    gastos_aplicables = []
-    for g in st.session_state.gastos_fijos_db:
-        if (quincena_actual == 1 and g["dia_vencimiento"] <= 15) or (quincena_actual == 2 and g["dia_vencimiento"] > 15):
-            gastos_aplicables.append(g)
+    if st.button("💰 Cargar Dinero a Caja Disponible"):
+        if monto_ingreso > 0:
+            st.session_state.disponible_caja += monto_ingreso
+            st.success(f"Cargados ${monto_ingreso:,.2f} MXN a tu presupuesto activo.")
+            st.rerun()
+    
+    st.markdown(f"#### **Dinero Disponible Actual en Caja:** :green[${st.session_state.disponible_caja:,.2f} MXN]")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- MÓDULO 2: GESTIÓN DE BASES DE DATOS (AGREGAR DEUDAS) ---
+with st.expander("🛠️ Configuración: Agregar o Editar Deudas / Gastos de Planta"):
+    st.markdown("#### Registrar Nueva Obligación")
+    with st.form("add_deuda_form"):
+        tipo_reg = st.selectbox("¿Qué deseas registrar?", ["Deuda / Tarjeta / Crédito", "Gasto Fijo de Vida"])
+        n_nombre = st.text_input("Nombre del concepto (Ej: Crédito Bancario)")
+        n_saldo = st.number_input("Saldo Total de la deuda (Poner 0 si es Gasto Fijo)", min_value=0.0)
+        n_tasa = st.number_input("Tasa de Interés Anual % (Poner 0 si es MSI o Gasto)", min_value=0.0)
+        n_minimo = st.number_input("Pago Mínimo o Monto del Gasto ($)", min_value=0.0)
+        n_dia = st.number_input("Día Límite de Pago en el Mes (1-31)", min_value=1, max_value=31, value=15)
+        
+        if st.form_submit_button("💾 Guardar Registro"):
+            if n_nombre and n_minimo > 0:
+                if tipo_reg == "Deuda / Tarjeta / Crédito":
+                    st.session_state.deudas_vivas.append({
+                        "nombre": n_nombre, "saldo": n_saldo, "tasa": n_tasa, "minimo": n_minimo, "dia_limite": n_dia, "es_msi": (n_tasa == 0)
+                    })
+                else:
+                    st.session_state.gastos_vivos.append({
+                        "concepto": n_nombre, "monto": n_minimo, "dia": n_dia, "pagado": False
+                    })
+                st.success(f"'{n_nombre}' guardado de manera exitosa.")
+                st.rerun()
+
+    if st.button("🧹 Reiniciar Mes (Marcar todos los Gastos Fijos como No Pagados)"):
+        for g in st.session_state.gastos_vivos:
+            g["pagado"] = False
+        st.success("Gastos mensuales restablecidos.")
+        st.rerun()
+
+# --- MÓDULO 3: TABLA INTELIGENTE Y ACCIONES DE PAGO ---
+st.markdown("### 🧠 2. Recomendaciones del Motor en Tiempo Real")
+
+# Filtrar las deudas que todavía tienen saldo mayor a cero
+deudas_activas = [d for d in st.session_state.deudas_vivas if d["saldo"] > 0]
+gastos_pendientes = [g for g in st.session_state.gastos_vivos if not g["pagado"]]
+
+if not deudas_activas and not gastos_pendientes:
+    st.balloons()
+    st.success("¡Increíble! No tienes gastos pendientes ni deudas activas este mes. Estabilidad financiera lograda.")
+else:
+    # Separar deudas por urgencia/interés para la recomendación
+    st.info("El algoritmo analiza tu saldo en caja y te dice exactamente a dónde destinar el dinero en este orden de prioridad:")
+
+    # PRIORIDAD 1: Gastos Fijos de Vida Pendientes
+    if gastos_pendientes:
+        st.markdown("#### 🏠 Prioridad 1: Subtotal Vida (Gastos Indispensables)")
+        for idx, g in enumerate(st.session_state.gastos_vivos):
+            if not g["pagado"]:
+                with st.container():
+                    st.markdown(f"""
+                    <div class="cuenta-item">
+                        <div class="flex-header"><span>• {g['concepto']}</span> <span class="text-warning">${g['monto']:,.2f}</span></div>
+                        <div class="text-muted">Vence el día {g['dia']} de este mes</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button(f"Confirmar Pago de {g['concepto']}", key=f"pay_g_{idx}"):
+                        if st.session_state.disponible_caja >= g["monto"]:
+                            st.session_state.disponible_caja -= g["monto"]
+                            g["pagado"] = True
+                            st.session_state.historial_pagos.append({
+                                "fecha": str(datetime.date.today()), "concepto": g["concepto"], "monto": g["monto"], "tipo": "Gasto Fijo"
+                            })
+                            st.success(f"Gasto '{g['concepto']}' liquidado y descontado de caja.")
+                            st.rerun()
+                        else:
+                            st.error("❌ No tienes suficiente dinero en caja disponible para cubrir este gasto.")
+
+    # PRIORIDAD 2: Pagos Mínimos Obligatorios para blindar historial
+    if deudas_activas:
+        st.markdown("#### 🛡️ Prioridad 2: Blindaje Mínimo Obligatorio")
+        for idx, d in enumerate(st.session_state.deudas_vivas):
+            if d["saldo"] > 0:
+                with st.container():
+                    monto_a_pagar = min(d["minimo"], d["saldo"])
+                    st.markdown(f"""
+                    <div class="cuenta-item">
+                        <div class="flex-header"><span>💳 {d['nombre']} (Mínimo requerido)</span> <span class="text-danger">${monto_a_pagar:,.2f}</span></div>
+                        <div class="text-muted">Vence el día {d['dia_limite']} | Tasa Anual: {d['tasa']}% | Saldo Total Actual: ${d['saldo']:,.2f}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if st.button(f"Pagar Mínimo a {d['nombre']}", key=f"min_d_{idx}"):
+                        if st.session_state.disponible_caja >= monto_a_pagar:
+                            st.session_state.disponible_caja -= monto_a_pagar
+                            d["saldo"] -= monto_a_pagar
+                            st.session_state.historial_pagos.append({
+                                "fecha": str(datetime.date.today()), "concepto": f"Pago Mínimo - {d['nombre']}", "monto": monto_a_pagar, "tipo": "Deuda"
+                            })
+                            st.success(f"Abonado pago mínimo a {d['nombre']}. Saldo restante: ${d['saldo']:,.2f}")
+                            st.rerun()
+                        else:
+                            st.error("❌ Dinero insuficiente en caja disponible.")
+
+        # PRIORIDAD 3: Algoritmo de Destrucción Acelerada (Avalancha)
+        deudas_con_interes = [d for d in deudas_activas if not d["es_msi"]]
+        if deudas_con_interes and st.session_state.disponible_caja > 0:
+            st.markdown("#### 💥 Prioridad 3: Modo Destrucción de Deuda (Avalancha)")
+            deuda_peor = max(deudas_con_interes, key=lambda x: x["tasa"])
             
-    # Distribución estricta de mínimos obligatorios
-    deudas_aplicables = []
-    for d in st.session_state.deudas_db:
-        # Regla de amortización quincenal preventiva del Brief:
-        # Si estamos en Q2 (días 16-30) y una deuda vence del 1 al 15 del mes entrante (ej. Santander el 1 o Préstamo el 9)
-        # El motor debe alertar y retenerlo obligatoriamente desde la Q2 actual.
-        if quincena_actual == 2 and d["fecha_limite_dia"] <= 15:
-            alertas.append(f"⚠️ **Amortización Preventiva:** '{d['nombre']}' vence el día {d['fecha_limite_dia']}. Se fondea con esta Q2 para evitar recargos al inicio del próximo mes.")
-            deudas_aplicables.append(d)
-        elif quincena_actual == 1 and (15 < d["fecha_limite_dia"] <= 31):
-            pass # Corresponde de forma natural a Q2
-        elif (quincena_actual == 1 and d["fecha_limite_dia"] <= 15) or (quincena_actual == 2 and d["fecha_limite_dia"] > 15):
-            deudas_aplicables.append(d)
+            st.markdown(f"""
+            <div style="background-color:#10b981; padding:14px; border-radius:8px; color:white; margin-bottom:10px;">
+            El motor inteligente detecta que te queda dinero libre. Te recomienda inyectar el remanente a <b>{deuda_peor['nombre']}</b> 
+            porque cobra la tasa de interés más agresiva del <b>{deuda_peor['tasa']}%</b>.
+            </div>
+            """, unsafe_allow_html=True)
             
-    return gastos_aplicables, deudas_aplicables, alertas
+            monto_extra = st.number_input(f"Monto extra a abonar a {deuda_peor['nombre']}", min_value=0.0, max_value=st.session_state.disponible_caja, value=st.session_state.disponible_caja, step=100.0)
+            
+            if st.button(f"🔥 Aplicar Abono Extra a {deuda_peor['nombre']}", key="btn_avalancha"):
+                if monto_extra > 0 and st.session_state.disponible_caja >= monto_extra:
+                    monto_efectivo = min(monto_extra, deuda_peor["saldo"])
+                    st.session_state.disponible_caja -= monto_efectivo
+                    deuda_peor["saldo"] -= monto_efectivo
+                    st.session_state.historial_pagos.append({
+                        "fecha": str(datetime.date.today()), "concepto": f"Abono Extra Avalancha - {deuda_peor['nombre']}", "monto": monto_efectivo, "tipo": "Deuda"
+                    })
+                    st.success(f"¡Golpe crítico a las deudas! Abonaste ${monto_efectivo:,.2f} a {deuda_peor['nombre']}.")
+                    st.rerun()
 
-def calcular_fase_b_avalancha():
-    if st.session_state.ingresos_extras <= 0:
-        return None
-    
-    # Filtrar deudas con interés reales que sigan teniendo saldo pendiente
-    con_interes = [d for d in st.session_state.deudas_db if not d["es_msi"] and d["saldo_total"] > 0]
-    if not con_interes:
-        return "⚡ ¡Felicidades! No tienes deudas con interés activo para aplicar Avalancha."
-        
-    # Algoritmo Avalancha: Atacar la tasa de interés anual más agresiva
-    deuda_objetivo = max(con_interes, key=lambda x: x["tasa_interes_anual"])
-    monto_inyectar = min(st.session_state.ingresos_extras, deuda_objetivo["saldo_total"])
-    
-    return {
-        "deuda": deuda_objetivo["nombre"],
-        "tasa": deuda_objetivo["tasa_interes_anual"],
-        "monto": monto_inyectar
-    }
+# --- CONSEJO INTELIGENTE SI QUEDA REMANENTE EXTRA ---
+if st.session_state.disponible_caja > 0 and not gastos_pendientes:
+    st.markdown("#### 🟢 Recomendación de Excedentes")
+    st.warning("⚠️ **Consejo de Estabilidad:** Tus gastos fijos de este periodo ya están cubiertos y tus mínimos blindados. Si decides no meter este dinero restante a deudas con interés, **no lo gastes de forma discrecional**. Transfiérelo a un apartado de ahorro para amortizar el transporte y despensa de la siguiente quincena.")
 
-# 4. INTERFAZ DE USUARIO (UI / UX MÓVIL)
-st.title("📱 Smart Finance App")
-st.caption("Ecosistema Personalizado de Gestión Financiera Inteligente")
+# --- MÓDULO 4: HISTORIAL DE LIQUIDACIONES Y REGISTROS ---
+st.markdown("---")
+st.markdown("### 🏆 Historial de Movimientos y Cuentas Liquidadas")
 
-# --- NUEVO MÓDULO: REGISTRO Y EDICIÓN COMPLETA DE DEUDAS (Petición del usuario) ---
-with st.expander("🛠️ Administrar Mis Deudas y Gastos (Modificar Cuentas)"):
-    st.markdown("#### Agregar Nueva Deuda o Compra")
-    with st.form("nueva_deuda_form"):
-        n_nombre = st.text_input("Nombre de la cuenta / concepto")
-        n_saldo = st.number_input("Saldo Total Actual ($)", min_value=0.0, step=100.0)
-        n_tasa = st.number_input("Tasa de Interés Anual (%)", min_value=0.0, step=1.0)
-        n_minimo = st.number_input("Pago Mínimo Quincenal/Mensual ($)", min_value=0.0, step=50.0)
-        n_dia = st.number_input("Día Límite de Pago (1-31)", min_value=1, max_value=31, value=15)
-        n_msi = st.checkbox("¿Es Plan Fijo / Meses Sin Intereses (0% Tasa)?")
-        
-        if st.form_submit_button("💾 Registrar en Base de Datos"):
-            if n_nombre:
-                st.session_state.deudas_db.append({
-                    "nombre": n_nombre, "saldo_total": n_saldo, "tasa_interes_anual": n_tasa,
-                    "pago_minimo": n_minimo, "fecha_limite_dia": n_dia, "es_msi": n_msi
-                })
-                st.success(f"'{n_nombre}' guardada exitosamente.")
-            else:
-                st.error("Por favor ingresa un nombre para la deuda.")
+tab_vivas, tab_liquidadas, tab_historial = st.tabs(["Deudas Activas", "Cuentas en $0.00", "Historial de Pagos"])
 
-    st.markdown("---")
-    st.markdown("#### Modificar Datos Actuales Directamente")
-    # Permitir edición interactiva en una tabla editable nativa de Streamlit
-    df_deudas_editable = pd.DataFrame(st.session_state.deudas_db)
-    edited_df = st.data_editor(df_deudas_editable, num_rows="dynamic", hide_index=True, use_container_width=True)
-    if st.button("🔄 Actualizar Todo"):
-        st.session_state.deudas_db = edited_df.to_dict(orient="records")
-        st.success("¡Base de datos financiera sincronizada e integrada con éxito!")
-
-# Control de simulación quincenal
-quincena = st.select_slider("📍 Periodo Quincenal a Evaluar", options=[1, 2], format_func=lambda x: f"Quincena {x} del Mes")
-
-st.markdown("### 🎛️ Panel de Ingresos")
-with st.container():
-    st.markdown('<div class="data-card">', unsafe_allow_html=True)
-    st.write(f"**Tu Ingreso Fijo Base (Quincenal):** `${INGRESO_FIJO_Q:,.2f} MXN`")
-    
-    extra_input = st.number_input("Inyección Inteligente (Comisión / Extra Variable)", min_value=0.0, step=100.0, key="val_extra")
-    if st.button("🚀 Activar Inyección"):
-        st.session_state.ingresos_extras = extra_input
-        st.success("Ingreso variable inyectado al motor de aceleración de pagos.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# Ejecución de cálculos basados en tu información viva
-gastos_lista, deudas_lista, alertas_motor = procesar_fase_a_detallada(quincena)
-total_g_fijos = sum(g["monto"] for g in gastos_lista)
-total_minimos = sum(d["pago_minimo"] for d in deudas_lista)
-dinero_libre = INGRESO_FIJO_Q - total_g_fijos - total_minimos
-recomendacion_avalancha = calcular_fase_b_avalancha()
-
-# --- SEMÁFORO FINANCIERO DINÁMICO CON TUS CUENTAS ---
-st.markdown("### 🧠 Semáforo Financiero Inteligente")
-
-for alerta in alertas_motor:
-    st.warning(alerta)
-
-# 1. Bloque de Tus Gastos de Vida Reales
-with st.container():
-    st.markdown(f"""
-    <div class="data-card" style="border-left-color: #3b82f6;">
-        <div class="flex-header">
-            <span>🏠 Prioridad 1: Subtotal Vida</span>
-            <span class="text-warning">${total_g_fijos:,.2f} MXN</span>
-        </div>
-        <p class="text-muted">Gastos de operación indispensables filtrados para este periodo:</p>
-    """, unsafe_allow_html=True)
-    for g in gastos_lista:
-        st.markdown(f"""
-        <div class="cuenta-item">
-            <div class="flex-header">
-                <span>• {g['concepto']}</span>
-                <span>${g['monto']:,.2f}</span>
-            </div>
-            <div class="text-muted">Vence el día {g['dia_vencimiento']}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# 2. Bloque de Tus Pagos Mínimos Obligatorios Reales
-with st.container():
-    st.markdown(f"""
-    <div class="data-card" style="border-left-color: #ef4444;">
-        <div class="flex-header">
-            <span>🛡️ Prioridad 2: Blindaje de Crédito</span>
-            <span class="text-danger">${total_minimos:,.2f} MXN</span>
-        </div>
-        <p class="text-muted">Montos mínimos que debes transferir ya a estas cuentas específicas:</p>
-    """, unsafe_allow_html=True)
-    for d in deudas_lista:
-        detalles = "Plan Fijo 0%" if d["es_msi"] else f"Tasa: {d['tasa_interes_anual']}%"
-        st.markdown(f"""
-        <div class="cuenta-item">
-            <div class="flex-header">
-                <span>💳 {d['nombre']}</span>
-                <span>${d['pago_minimo']:,.2f}</span>
-            </div>
-            <div class="text-muted">Vence el día {d['fecha_limite_dia']} | {detalles} | Saldo: ${d['saldo_total']:,.2f}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# 3. Liquidez Libre
-with st.container():
-    color_box = "#10b981" if dinero_libre >= 0 else "#ef4444"
-    st.markdown(f"""
-    <div class="data-card" style="border-left-color: {color_box};">
-        <div class="flex-header">
-            <span>🟢 Flujo Libre de la Quincena</span>
-            <span style="color: {color_box};">${dinero_libre:,.2f} MXN</span>
-        </div>
-        <p class="text-muted">Remanente libre para consumo diario discrecional tras proteger supervivencia y deudas.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Fase B: Ejecución del algoritmo de aceleración Avalancha con tus comisiones
-if recomendacion_avalancha:
-    if isinstance(recomendacion_avalancha, dict):
-        st.markdown(f"""
-        <div style="background-color:#10b981; padding:16px; border-radius:12px; color:white; margin-bottom:15px;">
-        💥 <b>MODO DESTRUCCIÓN DE DEUDA ACTIVADO</b><br>
-        Inyección extra detectada: <b>${st.session_state.ingresos_extras:,.2f} MXN</b>.<br><br>
-        <b>Estrategia de Optimización Matemática (Avalancha):</b><br>
-        Transfiere el 100% de este dinero extra (<b>${recomendacion_avalancha['monto']:,.2f} MXN</b>) como un abono directo a capital a la cuenta: <b>{recomendacion_avalancha['deuda']}</b>.<br>
-        <i>Razón del motor: Al ser tu cuenta con la tasa más alta ({recomendacion_avalancha['tasa']}% Anual), liquidarla primero te ahorra la mayor cantidad de dinero en intereses futuros.</i>
-        </div>
-        """, unsafe_allow_html=True)
+with tab_vivas:
+    vivas = [d for d in st.session_state.deudas_vivas if d["saldo"] > 0]
+    if vivas:
+        st.dataframe(pd.DataFrame(vivas)[["nombre", "saldo", "tasa", "minimo", "dia_limite"]], hide_index=True, use_container_width=True)
     else:
-        st.success(recomendacion_avalancha)
+        st.write("No hay deudas activas.")
 
-# --- VISTA B: DESGLOSE COMPLETO DEL MES ---
-st.markdown("### 📊 Proyección Operativa Mensual")
-t1, t2 = st.tabs(["Quincena 1 (Día 15)", "Quincena 2 (Día 30/31)"])
-
-with t1:
-    g1, d1, _ = procesar_fase_a_detallada(1)
-    df_q1 = pd.DataFrame({
-        "Cuenta / Concepto": [x["concepto"] for x in g1] + [x["nombre"] for x in d1],
-        "Tipo": ["Gasto de Vida"]*len(g1) + ["Mínimo Obligatorio"]*len(d1),
-        "Monto Requerido": [x["monto"] for x in g1] + [x["pago_minimo"] for x in d1]
-    })
-    st.dataframe(df_q1, hide_index=True, use_container_width=True)
-
-with t2:
-    g2, d2, _ = procesar_fase_a_detallada(2)
-    df_q2 = pd.DataFrame({
-        "Cuenta / Concepto": [x["concepto"] for x in g2] + [x["nombre"] for x in d2],
-        "Tipo": ["Gasto de Vida"]*len(g2) + ["Mínimo Obligatorio"]*len(d2),
-        "Monto Requerido": [x["monto"] for x in g2] + [x["pago_minimo"] for x in d2]
-    })
-    st.dataframe(df_q2, hide_index=True, use_container_width=True)
-
-# --- VISTA C: GRÁFICA DE TIEMPO PARA LIQUIDACIÓN ---
-st.markdown("### 📉 Proyección de Liquidación Total")
-df_base_calculo = pd.DataFrame(st.session_state.deudas_db)
-
-extra_mensual_simulado = st.slider("Simular abono extra constante a futuro", 0, 5000, int(st.session_state.ingresos_extras), step=250)
-
-timeline = []
-for d in st.session_state.deudas_db:
-    if d["saldo_total"] <= 0:
-        meses_fin = 0
-    elif d["es_msi"]:
-        meses_fin = np.ceil(d["saldo_total"] / d["pago_minimo"]) if d["pago_minimo"] > 0 else 12
+with tab_liquidadas:
+    liquidadas = [d for d in st.session_state.deudas_vivas if d["saldo"] <= 0]
+    if liquidadas:
+        st.success("🎉 Has borrado del mapa las siguientes deudas:")
+        st.dataframe(pd.DataFrame(liquidadas)[["nombre", "tasa", "minimo"]], hide_index=True, use_container_width=True)
     else:
-        # Encontrar de forma dinámica e interna cuál es la tasa de interés más alta que sigue viva
-        solo_interes = df_base_calculo[df_base_calculo['es_msi'] == False]
-        tasa_max = solo_interes['tasa_interes_anual'].max() if not solo_interes.empty else 0
-        es_la_mayor_tasa = (d["tasa_interes_anual"] == tasa_max)
-        
-        capacidad = d["pago_minimo"] + (extra_mensual_simulado if es_la_mayor_tasa else 0)
-        meses_fin = np.ceil(d["saldo_total"] / capacidad) if capacidad > 0 else 0
+        st.write("Aún no tienes deudas completamente liquidadas en este periodo. ¡Sigue así, vas a borrar la primera pronto!")
 
-    timeline.append({"Cuenta": d["nombre"], "Meses para quedar en $0.00": int(meses_fin)})
-
-df_timeline = pd.DataFrame(timeline)
-st.bar_chart(df_timeline.set_index("Cuenta"))
-st.dataframe(df_timeline, hide_index=True, use_container_width=True)
+with tab_historial:
+    if st.session_state.historial_pagos:
+        st.dataframe(pd.DataFrame(st.session_state.historial_pagos), hide_index=True, use_container_width=True)
+    else:
+        st.write("No se han ejecutado transacciones en esta sesión.")
