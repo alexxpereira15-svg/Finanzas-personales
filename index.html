@@ -1,293 +1,201 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Boda & Finanzas App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+import streamlit as st
+import pandas as pd
+import numpy as np
+
+# 1. CONFIGURACIÓN DE LA PÁGINA (UI/UX Móvil y Tema Oscuro)
+st.set_page_config(
+    page_title="Gestión Financiera Inteligente",
+    page_icon="💰",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
+# Estilos CSS personalizados para forzar un diseño limpio y móvil
+st.markdown("""
     <style>
-        :root { --rose: #c9717a; --dark: #2c1f22; --bg: #f8f5f2; --card: #ffffff; --green: #6aaa8a; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Jost', sans-serif; }
-        body { background: var(--bg); color: var(--dark); padding-bottom: 80px; }
-        
-        /* Navegación Inferior Estilo App */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; z-index: 1000; height: 65px; }
-        .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.75rem; color: #888; cursor: pointer; }
-        .nav-tab.active { color: var(--rose); font-weight: 600; border-top: 3px solid var(--rose); }
-
-        /* Contenedores */
-        .header { background: white; padding: 20px; text-align: center; border-bottom: 1px solid #eee; }
-        .view { padding: 15px; display: none; }
-        .view.active { display: block; }
-        .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        
-        /* Dashboard Componentes */
-        .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: white; padding: 15px; border-radius: 12px; border: 1px solid #eee; }
-        .progress-bg { background: #eee; border-radius: 10px; height: 8px; margin: 10px 0; }
-        .progress-fill { background: var(--rose); height: 100%; border-radius: 10px; transition: 0.4s; }
-        
-        /* Invitados y Listas */
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
-        .status-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; color: white; text-transform: uppercase; font-weight: 600; }
-        .badge-pend { background: #bbb; }
-        .badge-sent { background: #4a90e2; }
-        .badge-conf { background: var(--green); }
-
-        /* Botones y Forms */
-        .btn { padding: 12px; border-radius: 10px; border: none; width: 100%; font-weight: 600; cursor: pointer; margin-top: 5px; }
-        .btn-main { background: var(--rose); color: white; }
-        .btn-outline { background: none; border: 1px solid var(--rose); color: var(--rose); }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; }
-
-        /* Modales */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 20px; }
+    .reportview-container .main .block-container { max-width: 480px; padding-top: 1rem; }
+    .stButton>button { width: 100%; border-radius: 10px; height: 3em; }
+    div.data-card {
+        background-color: #1e293b;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 5px solid #3b82f6;
+    }
     </style>
-</head>
-<body>
+    """, unsafe_allow_html=True)
 
-<div class="header">
-    <h2 id="view-title">💍 Dashboard Boda</h2>
-</div>
+# 2. INICIALIZACIÓN DE ESTADO (Base de Datos Temporal / Sesión)
+if 'ingresos_extras' not in st.session_state:
+    st.session_state.ingresos_extras = 0.0
 
-<main>
-    <section id="boda" class="view active">
-        <div class="card" style="text-align: center;">
-            <p style="font-size: 0.8rem; color: #888;">Días restantes</p>
-            <h1 id="timer" style="font-size: 2.5rem; color: var(--rose);">00</h1>
-            <button class="btn-outline" style="width: auto; padding: 5px 15px; font-size: 0.7rem;" onclick="openModal('modal-date')">Cambiar Fecha</button>
-        </div>
+# Datos semilla basados en el modelo relacional del Brief
+INGRESO_FIJO_Q = 5000.00
 
-        <div class="grid-stats">
-            <div class="stat-box">
-                <p style="font-size: 0.7rem;">AHORRO BODA</p>
-                <h3 id="dash-ahorro-boda">$0</h3>
-            </div>
-            <div class="stat-box">
-                <p style="font-size: 0.7rem;">CONFIRMADOS</p>
-                <h3 id="dash-pax">0 PAX</h3>
-            </div>
-        </div>
+gastos_fijos = [
+    {"concepto": "Renta/Servicios (Provisión)", "monto": 2500.00, "dia_vencimiento": 5},
+    {"concepto": "Supermercado/Comida", "monto": 1200.00, "dia_vencimiento": 18}
+]
 
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>Metas de la Boda</h3>
-                <button class="btn-main" style="width:auto; padding: 5px 10px;" onclick="openModal('modal-meta')">+</button>
-            </div>
-            <div id="lista-metas" style="margin-top: 15px;"></div>
-        </div>
-    </section>
+deudas = [
+    {"nombre": "Tarjeta Santander", "saldo_total": 15000.00, "tasa_interes_anual": 21.76, "pago_minimo": 800.00, "fecha_limite_dia": 25, "es_msi": False},
+    {"nombre": "Compra Mercado Libre", "saldo_total": 3400.00, "tasa_interes_anual": 44.00, "pago_minimo": 450.00, "fecha_limite_dia": 9, "es_msi": False},
+    {"nombre": "Plan Telcel (MSI)", "saldo_total": 2400.00, "tasa_interes_anual": 0.00, "pago_minimo": 400.00, "fecha_limite_dia": 12, "es_msi": True}
+]
 
-    <section id="invitados" class="view">
-        <div class="card">
-            <h3>Lista de Invitados</h3>
-            <div id="lista-invitados"></div>
-            <button class="btn btn-main" onclick="openModal('modal-invitado')">Agregar Invitado</button>
-        </div>
-    </section>
+# 3. MOTOR DE INTELIGENCIA Y ALGORITMOS (Lógica de Negocio)
 
-    <section id="finanzas" class="view">
-        <div class="card" style="background: var(--dark); color: white;">
-            <p style="font-size: 0.8rem; opacity: 0.7;">Saldo en Cuentas</p>
-            <h2 id="saldo-cuentas">$0.00</h2>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn btn-main" onclick="openModal('modal-movimiento')">Nuevo Movimiento</button>
-            </div>
-        </div>
+def calcular_fase_a_supervivencia(quincena_actual):
+    """Lógica Presupuesto Base Cero Dinámico para Ingreso Fijo"""
+    disponible = INGRESO_FIJO_Q
+    alertas = []
+    
+    # Prioridad 1: Filtrar gastos fijos de la quincena
+    gastos_q = []
+    for g in gastos_fijos:
+        if (quincena_actual == 1 and g["dia_vencimiento"] <= 15) or (quincena_actual == 2 and g["dia_vencimiento"] > 15):
+            gastos_q.append(g)
+            
+    total_gastos_fijos = sum(g["monto"] for g in gastos_q)
+    disponible -= total_gastos_fijos
+    
+    # Prioridad 2: Asignar Pagos Mínimos Obligatorios de la quincena
+    minimos_q = []
+    for d in deudas:
+        # Regla de amortización quincenal preventiva (Ej: vence el 9, se provisiona o paga en Q2 del mes anterior)
+        if quincena_actual == 2 and d["fecha_limite_dia"] <= 15:
+            alertas.append(f"⚠️ **Alerta Preventiva:** '{d['nombre']}' vence el día {d['fecha_limite_dia']} de la próxima quincena. Se provisiona con este ingreso.")
+            minimos_q.append(d)
+        elif quincena_actual == 1 and (15 < d["fecha_limite_dia"] <= 31):
+            # No aplica a esta quincena de forma urgente
+            pass
+        elif (quincena_actual == 1 and d["fecha_limite_dia"] <= 15) or (quincena_actual == 2 and d["fecha_limite_dia"] > 15):
+            minimos_q.append(d)
+            
+    total_minimos = sum(d["pago_minimo"] for d in minimos_q)
+    disponible -= total_minimos
+    
+    return total_gastos_fijos, total_minimos, disponible, alertas
 
-        <div class="card">
-            <h3>Deudas Personales</h3>
-            <div id="lista-deudas"></div>
-            <button class="btn btn-outline" onclick="openModal('modal-deuda')">Agregar Deuda</button>
-        </div>
+def calcular_fase_b_avalancha():
+    """Algoritmo de Aceleración por Avalancha para Inyecciones de Capital"""
+    if st.session_state.ingresos_extras <= 0:
+        return None
+    
+    # Filtrar deudas con interés activo (eliminar MSI para la estrategia avalancha)
+    deudas_con_interes = [d for d in deudas if not d["es_msi"] and d["saldo_total"] > 0]
+    
+    if not deudas_con_interes:
+        return "¡Felicidades! No tienes deudas con interés. Ahorra o invierte este dinero extra."
         
-        <div class="card">
-            <h3>Configuración / Sync</h3>
-            <button class="btn btn-outline" onclick="exportData()">Copiar Datos para mi Pareja</button>
-            <button class="btn btn-outline" style="margin-top:10px" onclick="importData()">Importar Datos</button>
+    # Identificar la tasa más alta
+    deuda_objetivo = max(deudas_con_interes, key=lambda x: x["tasa_interes_anual"])
+    
+    monto_inyectar = min(st.session_state.ingresos_extras, deuda_objetivo["saldo_total"])
+    
+    return {
+        "deuda": deuda_objetivo["nombre"],
+        "tasa": deuda_objetivo["tasa_interes_anual"],
+        "monto": monto_inyectar
+    }
+
+# 4. INTERFAZ DE USUARIO (VISTAS)
+
+st.title("📱 Finanzas Inteligentes")
+st.subheader("Presupuesto Base Cero Dinámico")
+
+# Selector de periodo (Simulador de tiempo real)
+quincena = st.select_slider("Quincena Activa de Evaluación", options=[1, 2], format_func=lambda x: f"Quincena {x} del Mes")
+
+# --- INTERFAZ A: DASHBOARD DE INICIO ---
+st.markdown("### 🎛️ Panel de Control")
+
+# Módulo de Ingreso Rápido
+with st.container():
+    st.markdown('<div class="data-card">', unsafe_allow_html=True)
+    st.write(f"**Ingreso Fijo Quincenal Garantizado:** ${INGRESO_FIJO_Q:,.2f} MXN")
+    extra_input = st.number_input("Inyección Inteligente (Comisiones / Extras)", min_value=0.0, step=100.0, value=st.session_state.ingresos_extras)
+    if st.button("Registrar Ingreso Extra"):
+        st.session_state.ingresos_extras = extra_input
+        st.success("¡Inyección de capital registrada exitosamente!")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Cálculo de Algoritmos
+g_fijos, mins, libres, alertas_motor = calcular_fase_a_supervivencia(quincena)
+recomendacion_avalancha = calcular_fase_b_avalancha()
+
+# Sección de Consejos y Alertas Activas (La Tabla Inteligente)
+st.markdown("### 🧠 Tabla Inteligente (Semáforo Financiero)")
+
+# Mostrar alertas de amortización preventiva
+for alerta in alertas_motor:
+    st.warning(alerta)
+
+# Semáforo de distribución quincenal
+st.info(f"💡 **Distribución Recomendada (Ingreso Fijo):**\n"
+        f"- 🏠 **${g_fijos:,.2f} MXN** asignados a Gastos Fijos indispensables.\n"
+        f"- 🛡️ **${mins:,.2f} MXN** bloqueados para Pagos Mínimos Obligatorios.\n"
+        f"- 🟢 **${libres:,.2f} MXN** remanentes libres para uso diario.")
+
+if libres < 0:
+    st.error(f"🚨 **Déficit Detectado:** Te faltan ${abs(libres):,.2f} MXN para cubrir el Modo Supervivencia este periodo. Evita gastos variables.")
+
+# Alerta de Modo Destrucción de Deuda (Fase B)
+if recomendacion_avalancha:
+    if isinstance(recomendacion_avalancha, dict):
+        st.markdown(f"""
+        <div style="background-color:#10b981; padding:15px; border-radius:10px; color:white; margin-bottom:15px;">
+        💥 <b>MODO DESTRUCCIÓN DE DEUDA ACTIVADO</b><br>
+        Detectamos un ingreso extra de <b>${st.session_state.ingresos_extras:,.2f} MXN</b>.<br>
+        El algoritmo <b>Avalancha</b> recomienda destinar el 100% (<b>${recomendacion_avalancha['monto']:,.2f} MXN</b>) 
+        directamente a <b>{recomendacion_avalancha['deuda']}</b> debido a su alta tasa de interés anual del <b>{recomendacion_avalancha['tasa']}%</b>.
         </div>
-    </section>
-</main>
+        """, unsafe_allow_html=True)
+    else:
+        st.success(recomendacion_avalancha)
 
-<nav class="bottom-nav">
-    <div class="nav-tab active" onclick="switchTab('boda', '💍 Dashboard Boda')"><span>🏠</span>Boda</div>
-    <div class="nav-tab" onclick="switchTab('invitados', '👥 Invitados')"><span>👥</span>Invitados</div>
-    <div class="nav-tab" onclick="switchTab('finanzas', '💰 Finanzas')"><span>💰</span>Finanzas</div>
-</nav>
+# --- INTERFAZ B: TABLA DE DISTRIBUCIÓN ---
+st.markdown("### 📊 Distribución del Mes")
+tab1, tab2 = st.tabs(["Quincena 1 (Día 15)", "Quincena 2 (Día 30)"])
 
-<div id="modal-date" class="modal"><div class="modal-content">
-    <h3>Fecha de Boda</h3>
-    <input type="date" id="new-date">
-    <button class="btn btn-main" onclick="saveDate()">Guardar</button>
-    <button class="btn" onclick="closeModal('modal-date')">Cerrar</button>
-</div></div>
+with tab1:
+    st.write("**Estatus proyectado Q1:**")
+    gf_1, m_1, lib_1, _ = calcular_fase_a_supervivencia(1)
+    df_q1 = pd.DataFrame({
+        "Concepto": ["Gastos Fijos", "Mínimos Deuda", "Disponible Libre"],
+        "Monto": [gf_1, m_1, max(0, lib_1)]
+    })
+    st.dataframe(df_q1, hide_index=True, use_container_width=True)
 
-<div id="modal-meta" class="modal"><div class="modal-content">
-    <h3>Nueva Meta</h3>
-    <input type="text" id="m-nombre" placeholder="Concepto (ej. Banquete)">
-    <input type="number" id="m-meta" placeholder="Monto Meta $">
-    <button class="btn btn-main" onclick="addMeta()">Crear Meta</button>
-    <button class="btn" onclick="closeModal('modal-meta')">Cerrar</button>
-</div></div>
+with tab2:
+    st.write("**Estatus proyectado Q2:**")
+    gf_2, m_2, lib_2, _ = calcular_fase_a_supervivencia(2)
+    df_q2 = pd.DataFrame({
+        "Concepto": ["Gastos Fijos", "Mínimos Deuda", "Disponible Libre"],
+        "Monto": [gf_2, m_2, max(0, lib_2)]
+    })
+    st.dataframe(df_q2, hide_index=True, use_container_width=True)
 
-<div id="modal-invitado" class="modal"><div class="modal-content">
-    <h3>Nuevo Invitado</h3>
-    <input type="text" id="i-nombre" placeholder="Nombre">
-    <input type="number" id="i-pax" placeholder="Número de personas">
-    <button class="btn btn-main" onclick="addInvitado()">Agregar</button>
-    <button class="btn" onclick="closeModal('modal-invitado')">Cerrar</button>
-</div></div>
+# --- INTERFAZ C: GESTIÓN DE DEUDAS Y PROYECCIONES ---
+st.markdown("### 📉 Proyección de Liquidación")
+df_deudas = pd.DataFrame(deudas)
 
-<div id="modal-movimiento" class="modal"><div class="modal-content">
-    <h3>Movimiento</h3>
-    <select id="mov-tipo">
-        <option value="ahorro-boda">Ahorro para Boda</option>
-        <option value="ingreso">Ingreso General</option>
-        <option value="egreso">Gasto / Pago Deuda</option>
-    </select>
-    <input type="number" id="mov-monto" placeholder="Monto $">
-    <input type="text" id="mov-nota" placeholder="Nota">
-    <button class="btn btn-main" onclick="registrarMovimiento()">Registrar</button>
-    <button class="btn" onclick="closeModal('modal-movimiento')">Cerrar</button>
-</div></div>
+# Simulación de ritmo de abonos extras
+abono_mensual_extra_estimado = st.slider("Abono extra mensual proyectado (Futuro)", 0, 5000, int(st.session_state.ingresos_extras), step=500)
 
-<div id="modal-deuda" class="modal"><div class="modal-content">
-    <h3>Nueva Deuda</h3>
-    <input type="text" id="d-nombre" placeholder="Nombre deuda">
-    <input type="number" id="d-monto" placeholder="Monto total $">
-    <input type="number" id="d-meses" placeholder="Meses plazo">
-    <button class="btn btn-main" onclick="addDeuda()">Guardar</button>
-</div></div>
-
-<script>
-    // --- LÓGICA DE DATOS ---
-    let db = JSON.parse(localStorage.getItem('boda_db_v4')) || {
-        fecha: '2026-11-01',
-        ahorroBoda: 0,
-        disponibleCuentas: 26955,
-        metas: [{id: 1, nombre: 'Banquete', total: 134000, abonado: 0}],
-        invitados: [],
-        deudas: [
-            {id: 1, nombre: 'Préstamo NU', total: 5918, meses: 4},
-            {id: 2, nombre: 'Mensualidad Crédito', total: 1404, meses: 5}
-        ]
-    };
-
-    function save() { localStorage.setItem('boda_db_v4', JSON.stringify(db)); render(); }
-
-    function switchTab(id, title) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
-        document.getElementById('view-title').innerText = title;
-    }
-
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    // --- ACCIONES ---
-    function saveDate() { db.fecha = document.getElementById('new-date').value; save(); closeModal('modal-date'); }
-
-    function addMeta() {
-        const n = document.getElementById('m-nombre').value;
-        const m = parseFloat(document.getElementById('m-meta').value);
-        if(n && m) { db.metas.push({id: Date.now(), nombre: n, total: m, abonado: 0}); save(); closeModal('modal-meta'); }
-    }
-
-    function abonarMeta(id) {
-        const monto = parseFloat(prompt("¿Cuánto quieres abonar a esta meta desde el Ahorro Boda?"));
-        if(monto > db.ahorroBoda) return alert("No tienes suficiente ahorro para boda.");
-        const meta = db.metas.find(m => m.id === id);
-        meta.abonado += monto;
-        db.ahorroBoda -= monto;
-        save();
-    }
-
-    function addInvitado() {
-        const n = document.getElementById('i-nombre').value;
-        const p = parseInt(document.getElementById('i-pax').value);
-        if(n && p) { db.invitados.push({id: Date.now(), nombre: n, pax: p, status: 'pend'}); save(); closeModal('modal-invitado'); }
-    }
-
-    function cycleStatus(id) {
-        const i = db.invitados.find(x => x.id === id);
-        const flow = { 'pend': 'sent', 'sent': 'conf', 'conf': 'pend' };
-        i.status = flow[i.status];
-        save();
-    }
-
-    function registrarMovimiento() {
-        const tipo = document.getElementById('mov-tipo').value;
-        const monto = parseFloat(document.getElementById('mov-monto').value);
-        if(!monto) return;
-        if(tipo === 'ahorro-boda') { db.ahorroBoda += monto; db.disponibleCuentas -= monto; }
-        else if(tipo === 'ingreso') { db.disponibleCuentas += monto; }
-        else { db.disponibleCuentas -= monto; }
-        save(); closeModal('modal-movimiento');
-    }
-
-    function addDeuda() {
-        const n = document.getElementById('d-nombre').value;
-        const m = parseFloat(document.getElementById('d-monto').value);
-        const p = parseInt(document.getElementById('d-meses').value);
-        db.deudas.push({id: Date.now(), nombre: n, total: m, meses: p});
-        save(); closeModal('modal-deuda');
-    }
-
-    // --- RENDER ---
-    function render() {
-        // Timer
-        const diff = new Date(db.fecha) - new Date();
-        document.getElementById('timer').innerText = Math.max(0, Math.floor(diff / 86400000));
-
-        // Stats
-        document.getElementById('dash-ahorro-boda').innerText = `$${db.ahorroBoda.toLocaleString()}`;
-        document.getElementById('saldo-cuentas').innerText = `$${db.disponibleCuentas.toLocaleString()}`;
+proyecciones = []
+for d in deudas:
+    # Si es MSI el cálculo es directo, si tiene interés y hay abono extra acelerará el pago
+    if d["es_msi"]:
+        meses_fin = np.ceil(d["saldo_total"] / d["pago_minimo"]) if d["pago_minimo"] > 0 else 12
+    else:
+        # Se calcula asumiendo que el abono extra se concentra en la de mayor tasa según algoritmo Avalancha
+        es_la_mayor_tasa = (d["tasa_interes_anual"] == df_deudas[df_deudas['es_msi']==False]['tasa_interes_anual'].max())
+        capacidad_pago = d["pago_minimo"] + (abono_mensual_extra_estimado if es_la_mayor_tasa else 0)
+        meses_fin = np.ceil(d["saldo_total"] / capacidad_pago) if capacidad_pago > 0 else 0
         
-        const confPax = db.invitados.filter(i => i.status === 'conf').reduce((a, b) => a + b.pax, 0);
-        document.getElementById('dash-pax').innerText = `${confPax} PAX`;
+    proyecciones.append({"Deuda": d["nombre"], "Meses para Liquidar": int(meses_fin)})
 
-        // Listas
-        document.getElementById('lista-metas').innerHTML = db.metas.map(m => `
-            <div class="item-row" onclick="abonarMeta(${m.id})">
-                <div style="flex:1">
-                    <div style="display:flex; justify-content:space-between"><strong>${m.nombre}</strong> <span>$${m.abonado} / $${m.total}</span></div>
-                    <div class="progress-bg"><div class="progress-fill" style="width:${(m.abonado/m.total)*100}%"></div></div>
-                </div>
-            </div>
-        `).join('');
-
-        document.getElementById('lista-invitados').innerHTML = db.invitados.map(i => `
-            <div class="item-row">
-                <span>${i.nombre} (${i.pax})</span>
-                <span class="status-badge badge-${i.status}" onclick="cycleStatus(${i.id})">
-                    ${i.status === 'pend' ? 'Pendiente' : i.status === 'sent' ? 'Enviada' : 'Confirmado'}
-                </span>
-            </div>
-        `).join('');
-
-        document.getElementById('lista-deudas').innerHTML = db.deudas.map(d => `
-            <div class="item-row">
-                <span><strong>${d.nombre}</strong><br><small>${d.meses} meses restantes</small></span>
-                <span style="color:red; font-weight:600;">$${d.total.toLocaleString()}</span>
-            </div>
-        `).join('');
-    }
-
-    function exportData() {
-        const code = btoa(JSON.stringify(db));
-        navigator.clipboard.writeText(code);
-        alert("Código de sincronización copiado. Envíalo a tu pareja.");
-    }
-
-    function importData() {
-        const code = prompt("Pega el código de tu pareja aquí:");
-        if(code) { db = JSON.parse(atob(code)); save(); }
-    }
-
-    render();
-</script>
-</body>
-</html>
+df_proyeccion = pd.DataFrame(proyecciones)
+st.bar_chart(df_proyeccion.set_index("Deuda"))
+st.dataframe(df_proyeccion, hide_index=True, use_container_width=True)
