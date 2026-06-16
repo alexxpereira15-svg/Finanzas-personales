@@ -4,27 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stefy 2026 - Control de Presupuesto</title>
+    <!-- Tailwind CSS para diseño moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para gráficos financieros -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
+    <!-- BARRA DE NAVEGACIÓN -->
     <header class="bg-indigo-700 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-2">
-                <i data-lucide="wallet" class="w-8 h-8 text-indigo-200"></i>
-                <h1 class="text-2xl font-bold tracking-tight">Stefy <span class="text-indigo-200">2026</span></h1>
+                <span class="text-2xl font-bold tracking-tight">Stefy <span class="text-indigo-200">2026</span></span>
             </div>
             <nav class="flex flex-wrap gap-2" id="main-nav">
-                <button onclick="switchTab('resumen')" id="btn-resumen" class="nav-btn bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-1">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Resumen Anual
+                <button onclick="switchTab('resumen')" id="btn-resumen" class="bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium transition">
+                    📊 Resumen Anual
                 </button>
-                <button onclick="switchTab('meses')" id="btn-meses" class="nav-btn hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition flex items-center gap-1">
-                    <i data-lucide="calendar" class="w-4 h-4"></i> Control Mensual
+                <button onclick="switchTab('meses')" id="btn-meses" class="hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition">
+                    📅 Control Mensual
                 </button>
-                <button onclick="switchTab('deudas')" id="btn-deudas" class="nav-btn hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition flex items-center gap-1">
-                    <i data-lucide="credit-card" class="w-4 h-4"></i> Deudas Generales
+                <button onclick="switchTab('deudas')" id="btn-deudas" class="hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition">
+                    💳 Deudas Generales
                 </button>
             </nav>
         </div>
@@ -32,55 +33,44 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
         
-        <section id="section-resumen" class="tab-content block space-y-6">
+        <!-- SECCIÓN 1: RESUMEN ANUAL -->
+        <section id="section-resumen" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Ingresos Anuales Totales</p>
-                        <h3 class="text-2xl font-bold text-emerald-600" id="ann-ingresos">$0.00</h3>
-                    </div>
-                    <div class="bg-emerald-50 p-3 rounded-lg text-emerald-600"><i data-lucide="trending-up"></i></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <p class="text-sm text-slate-500 font-medium">Ingresos Anuales Totales</p>
+                    <h3 class="text-2xl font-bold text-emerald-600" id="ann-ingresos">$0.00</h3>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Gastos Fijos Totales</p>
-                        <h3 class="text-2xl font-bold text-amber-600" id="ann-fijos">$0.00</h3>
-                    </div>
-                    <div class="bg-amber-50 p-3 rounded-lg text-amber-600"><i data-lucide="home"></i></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <p class="text-sm text-slate-500 font-medium">Gastos Fijos Totales</p>
+                    <h3 class="text-2xl font-bold text-amber-600" id="ann-fijos">$0.00</h3>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Deudas Pagadas (Año)</p>
-                        <h3 class="text-2xl font-bold text-rose-600" id="ann-deudas">$0.00</h3>
-                    </div>
-                    <div class="bg-rose-50 p-3 rounded-lg text-rose-600"><i data-lucide="dollar-sign"></i></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <p class="text-sm text-slate-500 font-medium">Deudas Pagadas (Año)</p>
+                    <h3 class="text-2xl font-bold text-rose-600" id="ann-deudas">$0.00</h3>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Balance Neto Restante</p>
-                        <h3 class="text-2xl font-bold text-indigo-600" id="ann-balance">$0.00</h3>
-                    </div>
-                    <div class="bg-indigo-50 p-3 rounded-lg text-indigo-600"><i data-lucide="scale"></i></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <p class="text-sm text-slate-500 font-medium">Balance Neto Restante</p>
+                    <h3 class="text-2xl font-bold text-indigo-600" id="ann-balance">$0.00</h3>
                 </div>
             </div>
 
+            <!-- Gráfico del Resumen -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700">
-                    <i data-lucide="bar-chart-3" class="text-indigo-600"></i> Flujo de Caja Mensual Real vs Presupuesto
-                </h3>
+                <h3 class="text-lg font-bold mb-4 text-slate-700">📈 Flujo de Caja Mensual Real vs Presupuesto</h3>
                 <div class="h-80 relative">
                     <canvas id="chartResumenAnual"></canvas>
                 </div>
             </div>
         </section>
 
-        <section id="section-meses" class="tab-content hidden space-y-6">
+        <!-- SECCIÓN 2: CONTROL MENSUAL -->
+        <section id="section-meses" class="hidden space-y-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div>
                     <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Seleccionar Mes de Gestión</label>
                     <select id="month-selector" onchange="loadMonthData()" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
-                        <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+                        <option value="3">Abril</option><option value="4" selected>Mayo</option><option value="5">Junio</option>
                         <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
                         <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
                     </select>
@@ -98,9 +88,10 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Gastos Fijos -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
                     <div class="flex justify-between items-center border-b pb-2">
-                        <h4 class="font-bold text-slate-700 flex items-center gap-2"><i data-lucide="home" class="text-amber-500 w-5 h-5"></i> Gastos Fijos y Facturas</h4>
+                        <h4 class="font-bold text-slate-700">🏠 Gastos Fijos y Facturas</h4>
                         <button onclick="openAddRowModal('Gastos Fijos')" class="text-xs bg-indigo-50 text-indigo-600 font-semibold px-2 py-1 rounded hover:bg-indigo-100 transition">+ Añadir Concepto</button>
                     </div>
                     <div class="overflow-x-auto">
@@ -113,9 +104,10 @@
                     </div>
                 </div>
 
+                <!-- Amortización de Deudas -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
                     <div class="flex justify-between items-center border-b pb-2">
-                        <h4 class="font-bold text-slate-700 flex items-center gap-2"><i data-lucide="credit-card" class="text-rose-500 w-5 h-5"></i> Amortización de Deudas</h4>
+                        <h4 class="font-bold text-slate-700">💸 Amortización de Deudas</h4>
                         <button onclick="openAddRowModal('Deudas')" class="text-xs bg-indigo-50 text-indigo-600 font-semibold px-2 py-1 rounded hover:bg-indigo-100 transition">+ Añadir Concepto</button>
                     </div>
                     <div class="overflow-x-auto">
@@ -130,15 +122,16 @@
             </div>
         </section>
 
-        <section id="section-deudas" class="tab-content hidden space-y-6">
+        <!-- SECCIÓN 3: DEUDAS GENERALES -->
+        <section id="section-deudas" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
                 <div class="flex justify-between items-center border-b pb-3">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-700">Estado de Pasivos y Deudas Consolidadas</h3>
-                        <p class="text-xs text-slate-400">Monitoreo histórico total amortizado frente al saldo faltante</p>
+                        <h3 class="text-lg font-bold text-slate-700">Consolidado General de Pasivos</h3>
+                        <p class="text-xs text-slate-400">Datos extraídos de tu plantilla base</p>
                     </div>
-                    <button onclick="openAddDeudaGeneralModal()" class="bg-indigo-600 text-white font-medium text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center gap-1">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Nueva Deuda
+                    <button onclick="openAddDeudaGeneralModal()" class="bg-indigo-600 text-white font-medium text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                        + Nueva Deuda
                     </button>
                 </div>
 
@@ -153,8 +146,7 @@
                                 <th class="p-3 text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="table-deudas-generales" class="divide-y divide-slate-100">
-                            </tbody>
+                        <tbody id="table-deudas-generales" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
 
@@ -168,6 +160,7 @@
 
     </main>
 
+    <!-- MODAL DE ENTRADAS DE DATOS (REUTILIZABLE) -->
     <div id="modal-conceptos" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white max-w-sm w-full rounded-xl shadow-xl border p-6 space-y-4">
             <h3 class="text-lg font-bold text-slate-700" id="modal-title">Agregar Registro</h3>
@@ -175,36 +168,37 @@
             <div class="space-y-3">
                 <div>
                     <label class="text-xs font-bold text-slate-500 block mb-1">Nombre o Descripción</label>
-                    <input type="text" id="input-label" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="text" id="input-label" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-xs font-bold text-slate-500 block mb-1">Presupuestado ($)</label>
-                        <input type="number" id="input-budget" value="0" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <input type="number" id="input-budget" value="0" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
                         <label class="text-xs font-bold text-slate-500 block mb-1">Monto Real ($)</label>
-                        <input type="number" id="input-real" value="0" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <input type="number" id="input-real" value="0" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeModal('modal-conceptos')" class="px-4 py-2 border rounded-lg text-sm text-slate-500 hover:bg-slate-50 font-medium">Cancelar</button>
+                <button onclick="closeModal('modal-conceptos')" class="px-4 py-2 border rounded-lg text-sm text-slate-500 hover:bg-slate-50">Cancelar</button>
                 <button onclick="saveRowItem()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Guardar</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL PARA AGREGAR DEUDA GENERAL -->
     <div id="modal-deuda-general" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white max-w-sm w-full rounded-xl shadow-xl border p-6 space-y-4">
             <h3 class="text-lg font-bold text-slate-700">Añadir Pasivo General</h3>
             <div class="space-y-3">
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Acreedor (ej. LIVERPOOL, AUTO)</label>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Acreedor / Cuenta</label>
                     <input type="text" id="dg-input-label" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto Total de la Deuda</label>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto Total Inicial</label>
                     <input type="number" id="dg-input-total" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
                 <div>
@@ -220,11 +214,11 @@
     </div>
 
     <footer class="bg-slate-100 border-t mt-12 py-4 text-center text-xs text-slate-400">
-        Stefy 2026 Financial Planner &bull; Todos tus datos se almacenan localmente de forma segura en tu navegador.
+        Stefy 2026 Financial Planner &bull; Datos persistidos en LocalStorage.
     </footer>
 
     <script>
-        // Datos Base Iniciales extraídos directamente de tus archivos cargados (Ejemplos Reales)
+        // Sincronización exacta con los valores reales de tu documento "Stefy 2026.xlsx"
         const defaultData = {
             deudasGenerales: [
                 { id: 1, name: "AUTO", total: 100000, pagado: 31000 },
@@ -236,15 +230,17 @@
                 { id: 7, name: "TDC MERCADO", total: 6077, pagado: 0 }
             ],
             meses: Array.from({ length: 12 }, (_, i) => ({
-                ingresos: i === 4 ? 26087.86 : 15000, // Mayo simulado con datos reales cargados
-                rows: [
-                    { category: "Gastos Fijos", label: "Gastos Fijos y Facturas", budget: i === 4 ? 11500 : 12000, real: i === 4 ? 11500 : 0 },
-                    { category: "Deudas", label: "Amortizaciones del Mes", budget: i === 4 ? 6166 : 1031, real: i === 4 ? 6164.73 : 0 }
+                ingresos: i === 4 ? 26087.86 : 16000, // Mayo tiene tus ingresos reales registrados
+                rows: i === 4 ? [
+                    { category: "Gastos Fijos", label: "Gastos Fijos Planificados", budget: 11500, real: 11500 },
+                    { category: "Deudas", label: "Amortizaciones del mes", budget: 6166, real: 6164.73 }
+                ] : [
+                    { category: "Gastos Fijos", label: "Gastos Fijos Estimados", budget: 12000, real: 0 },
+                    { category: "Deudas", label: "Pago Mínimo Tarjetas", budget: 1031, real: 0 }
                 ]
             }))
         };
 
-        // Cargar desde LocalStorage o usar datos por defecto
         let appData = JSON.parse(localStorage.getItem('stefy_budget_2026')) || defaultData;
         let chartInstance = null;
 
@@ -253,27 +249,30 @@
             updateAllViews();
         }
 
-        // Manejo de Navegación de Pestañas
+        // Cambio de pestaña arreglado sin dependencias externas
         function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('section-resumen').classList.add('hidden');
+            document.getElementById('section-meses').classList.add('hidden');
+            document.getElementById('section-deudas').classList.add('hidden');
+            
             document.getElementById(`section-${tabId}`).classList.remove('hidden');
             
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-800', 'text-white');
-                btn.classList.add('hover:bg-indigo-600', 'text-indigo-100');
+            const tabs = ['resumen', 'meses', 'deudas'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`btn-${t}`);
+                btn.className = "hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition";
             });
-            document.getElementById(`btn-${tabId}`).classList.remove('hover:bg-indigo-600', 'text-indigo-100');
-            document.getElementById(`btn-${tabId}`).classList.add('bg-indigo-800', 'text-white');
             
-            if(tabId === 'resumen') renderCharts();
+            document.getElementById(`btn-${tabId}`).className = "bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium transition";
+            
+            if (tabId === 'resumen') {
+                renderCharts();
+            }
         }
 
-        // Formateador de moneda
         const fCurrency = num => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num);
 
-        // Actualizar datos visuales de la aplicación
         function updateAllViews() {
-            // 1. Cálculos de Resumen Anual
             let totIngresos = 0, totFijos = 0, totDeudas = 0;
             appData.meses.forEach(m => {
                 totIngresos += m.ingresos;
@@ -288,7 +287,7 @@
             document.getElementById('ann-deudas').innerText = fCurrency(totDeudas);
             document.getElementById('ann-balance').innerText = fCurrency(totIngresos - (totFijos + totDeudas));
 
-            // 2. Renderizar Deudas Generales
+            // Renderizar Sección Deudas
             const tbodyDG = document.getElementById('table-deudas-generales');
             tbodyDG.innerHTML = '';
             let dgTotal = 0, dgPagado = 0, dgFaltante = 0;
@@ -304,9 +303,7 @@
                         <td class="p-3 text-right text-emerald-600 font-medium">${fCurrency(d.pagado)}</td>
                         <td class="p-3 text-right text-rose-600 font-semibold">${fCurrency(faltante)}</td>
                         <td class="p-3 text-center">
-                            <button onclick="deleteDeudaGeneral(${idx})" class="text-slate-300 hover:text-rose-600 transition">
-                                <i data-lucide="trash-2" class="w-4 h-4 mx-auto"></i>
-                            </button>
+                            <button onclick="deleteDeudaGeneral(${idx})" class="text-rose-500 hover:text-rose-700 font-medium">Eliminar</button>
                         </td>
                     </tr>
                 `;
@@ -315,12 +312,9 @@
             document.getElementById('dg-pagado').innerText = fCurrency(dgPagado);
             document.getElementById('dg-faltante').innerText = fCurrency(dgFaltante);
 
-            // 3. Renderizar Mes Actual Seleccionado
             loadMonthData();
-            lucide.createIcons();
         }
 
-        // Carga de tablas específicas por mes
         function loadMonthData() {
             const mIdx = document.getElementById('month-selector').value;
             const month = appData.meses[mIdx];
@@ -329,4 +323,120 @@
             const tDeudas = document.getElementById('table-deudas-mes');
             tFijos.innerHTML = ''; tDeudas.innerHTML = '';
 
-            let budgetTotal = 0, realTotal
+            let budgetTotal = 0, realTotal = 0;
+
+            month.rows.forEach((r, idx) => {
+                budgetTotal += r.budget;
+                realTotal += r.real;
+                const rowHtml = `
+                    <tr>
+                        <td class="py-2.5 font-medium text-slate-700">${r.label}</td>
+                        <td class="py-2.5 text-right font-mono">${fCurrency(r.budget)}</td>
+                        <td class="py-2.5 text-right font-mono text-indigo-600 font-semibold">${fCurrency(r.real)}</td>
+                        <td class="py-2.5 text-center">
+                            <button onclick="deleteMonthRow(${mIdx}, ${idx})" class="text-rose-500 hover:text-rose-700 font-medium">✖</button>
+                        </td>
+                    </tr>
+                `;
+                if(r.category === 'Gastos Fijos') tFijos.innerHTML += rowHtml;
+                else if(r.category === 'Deudas') tDeudas.innerHTML += rowHtml;
+            });
+
+            document.getElementById('month-budget-total').innerText = fCurrency(budgetTotal);
+            document.getElementById('month-real-total').innerText = fCurrency(realTotal);
+        }
+
+        function openAddRowModal(category) {
+            document.getElementById('modal-category').value = category;
+            document.getElementById('modal-title').innerText = `Nuevo Item: ${category}`;
+            document.getElementById('input-label').value = '';
+            document.getElementById('input-budget').value = 0;
+            document.getElementById('input-real').value = 0;
+            document.getElementById('modal-conceptos').classList.remove('hidden');
+        }
+
+        function saveRowItem() {
+            const mIdx = document.getElementById('month-selector').value;
+            const category = document.getElementById('modal-category').value;
+            const label = document.getElementById('input-label').value || "Concepto General";
+            const budget = parseFloat(document.getElementById('input-budget').value) || 0;
+            const real = parseFloat(document.getElementById('input-real').value) || 0;
+
+            appData.meses[mIdx].rows.push({ category, label, budget, real });
+            closeModal('modal-conceptos');
+            saveToStorage();
+        }
+
+        function deleteMonthRow(mIdx, rIdx) {
+            appData.meses[mIdx].rows.splice(rIdx, 1);
+            saveToStorage();
+        }
+
+        function openAddDeudaGeneralModal() {
+            document.getElementById('dg-input-label').value = '';
+            document.getElementById('dg-input-total').value = '';
+            document.getElementById('dg-input-pagado').value = '';
+            document.getElementById('modal-deuda-general').classList.remove('hidden');
+        }
+
+        function saveDeudaGeneral() {
+            const name = document.getElementById('dg-input-label').value || "Acreedor";
+            const total = parseFloat(document.getElementById('dg-input-total').value) || 0;
+            const pagado = parseFloat(document.getElementById('dg-input-pagado').value) || 0;
+
+            appData.deudasGenerales.push({ id: Date.now(), name, total, pagado });
+            closeModal('modal-deuda-general');
+            saveToStorage();
+        }
+
+        function deleteDeudaGeneral(idx) {
+            if(confirm("¿Deseas eliminar este registro de deuda?")) {
+                appData.deudasGenerales.splice(idx, 1);
+                saveToStorage();
+            }
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function renderCharts() {
+            const canvas = document.getElementById('chartResumenAnual');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const datosPresupuesto = Array(12).fill(0);
+            const datosReal = Array(12).fill(0);
+
+            appData.meses.forEach((m, idx) => {
+                m.rows.forEach(r => {
+                    datosPresupuesto[idx] += r.budget;
+                    datosReal[idx] += r.real;
+                });
+            });
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Presupuestado Máx', data: datosPresupuesto, backgroundColor: '#cbd5e1' },
+                        { label: 'Gasto Real Efectuado', data: datosReal, backgroundColor: '#6366f1' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        window.onload = () => {
+            updateAllViews();
+            renderCharts();
+        };
+    </script>
+</body>
+</html>
