@@ -3,29 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefy 2026 - Control de Presupuesto</title>
-    <!-- Tailwind CSS para diseño moderno -->
+    <title>Stefy 2026 - Registro Financiero Real</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js para gráficos financieros -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <!-- BARRA DE NAVEGACIÓN -->
     <header class="bg-indigo-700 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-2">
                 <span class="text-2xl font-bold tracking-tight">Stefy <span class="text-indigo-200">2026</span></span>
+                <span class="bg-indigo-600 text-xs px-2 py-1 rounded-full font-mono font-bold">Modo Transaccional</span>
             </div>
             <nav class="flex flex-wrap gap-2" id="main-nav">
                 <button onclick="switchTab('resumen')" id="btn-resumen" class="bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium transition">
-                    📊 Resumen Anual
+                    📊 Vista General
                 </button>
-                <button onclick="switchTab('meses')" id="btn-meses" class="hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition">
-                    📅 Control Mensual
+                <button onclick="switchTab('transacciones')" id="btn-transacciones" class="hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition">
+                    💸 Registrar Ingresos / Gastos
                 </button>
                 <button onclick="switchTab('deudas')" id="btn-deudas" class="hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition">
-                    💳 Deudas Generales
+                    💳 Mis Deudas y Pagos
                 </button>
             </nav>
         </div>
@@ -33,105 +31,84 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
         
-        <!-- SECCIÓN 1: RESUMEN ANUAL -->
         <section id="section-resumen" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                    <p class="text-sm text-slate-500 font-medium">Ingresos Anuales Totales</p>
-                    <h3 class="text-2xl font-bold text-emerald-600" id="ann-ingresos">$0.00</h3>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                    <p class="text-sm text-slate-500 font-medium">Gastos Fijos Totales</p>
-                    <h3 class="text-2xl font-bold text-amber-600" id="ann-fijos">$0.00</h3>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                    <p class="text-sm text-slate-500 font-medium">Deudas Pagadas (Año)</p>
-                    <h3 class="text-2xl font-bold text-rose-600" id="ann-deudas">$0.00</h3>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                    <p class="text-sm text-slate-500 font-medium">Balance Neto Restante</p>
-                    <h3 class="text-2xl font-bold text-indigo-600" id="ann-balance">$0.00</h3>
-                </div>
-            </div>
-
-            <!-- Gráfico del Resumen -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h3 class="text-lg font-bold mb-4 text-slate-700">📈 Flujo de Caja Mensual Real vs Presupuesto</h3>
-                <div class="h-80 relative">
-                    <canvas id="chartResumenAnual"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN 2: CONTROL MENSUAL -->
-        <section id="section-meses" class="hidden space-y-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div>
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Seleccionar Mes de Gestión</label>
-                    <select id="month-selector" onchange="loadMonthData()" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Filtrar por Mes</label>
+                    <select id="resumen-month-selector" onchange="updateAllViews()" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="todos">Todo el Año (2026)</option>
                         <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
                         <option value="3">Abril</option><option value="4" selected>Mayo</option><option value="5">Junio</option>
                         <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
                         <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
                     </select>
                 </div>
-                <div class="flex gap-4 text-sm">
-                    <div class="text-right">
-                        <span class="text-slate-400 block text-xs font-medium">Límite Presupuestado</span>
-                        <span class="font-bold text-slate-700 text-lg" id="month-budget-total">$0.00</span>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-slate-400 block text-xs font-medium">Total Gastado Real</span>
-                        <span class="font-bold text-indigo-600 text-lg" id="month-real-total">$0.00</span>
-                    </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <p class="text-sm text-slate-500 font-medium">Ingresos Registrados</p>
+                    <h3 class="text-2xl font-bold text-emerald-600" id="card-ingresos">$0.00</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <p class="text-sm text-slate-500 font-medium">Gastos Reales</p>
+                    <h3 class="text-2xl font-bold text-amber-600" id="card-gastos">$0.00</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <p class="text-sm text-slate-500 font-medium">Abonado a Deudas</p>
+                    <h3 class="text-2xl font-bold text-rose-600" id="card-deudas">$0.00</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <p class="text-sm text-slate-500 font-medium">Dinero Disponible Neto</p>
+                    <h3 class="text-2xl font-bold text-indigo-600" id="card-disponible">$0.00</h3>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Gastos Fijos -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
-                    <div class="flex justify-between items-center border-b pb-2">
-                        <h4 class="font-bold text-slate-700">🏠 Gastos Fijos y Facturas</h4>
-                        <button onclick="openAddRowModal('Gastos Fijos')" class="text-xs bg-indigo-50 text-indigo-600 font-semibold px-2 py-1 rounded hover:bg-indigo-100 transition">+ Añadir Concepto</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="text-slate-400 border-b"><th class="pb-2">Concepto</th><th class="pb-2 text-right">Presupuestado</th><th class="pb-2 text-right">Real</th><th class="pb-2 text-center">Acción</th></tr>
-                            </thead>
-                            <tbody id="table-fijos" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Amortización de Deudas -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
-                    <div class="flex justify-between items-center border-b pb-2">
-                        <h4 class="font-bold text-slate-700">💸 Amortización de Deudas</h4>
-                        <button onclick="openAddRowModal('Deudas')" class="text-xs bg-indigo-50 text-indigo-600 font-semibold px-2 py-1 rounded hover:bg-indigo-100 transition">+ Añadir Concepto</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="text-slate-400 border-b"><th class="pb-2">Cuenta/Tarjeta</th><th class="pb-2 text-right">Presupuestado</th><th class="pb-2 text-right">Real</th><th class="pb-2 text-center">Acción</th></tr>
-                            </thead>
-                            <tbody id="table-deudas-mes" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h3 class="text-lg font-bold mb-4 text-slate-700">📊 Balance de Flujo de Caja Real Mensual</h3>
+                <div class="h-80 relative">
+                    <canvas id="chartFlujoReal"></canvas>
                 </div>
             </div>
         </section>
 
-        <!-- SECCIÓN 3: DEUDAS GENERALES -->
+        <section id="section-transacciones" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                <h3 class="text-lg font-bold text-slate-700">📝 Registro de Movimientos Reales</h3>
+                <div class="flex gap-2">
+                    <button onclick="openTransactionModal('Ingreso')" class="bg-emerald-600 text-white font-medium text-sm px-4 py-2 rounded-lg hover:bg-emerald-700 transition">+ Registrar Ingreso</button>
+                    <button onclick="openTransactionModal('Gasto')" class="bg-amber-600 text-white font-medium text-sm px-4 py-2 rounded-lg hover:bg-amber-700 transition">+ Registrar Gasto</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-slate-400 font-medium border-b bg-slate-50">
+                                <th class="p-3">Mes</th>
+                                <th class="p-3">Tipo</th>
+                                <th class="p-3">Concepto/Descripción</th>
+                                <th class="p-3 text-right">Monto</th>
+                                <th class="p-3 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-transactions" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <section id="section-deudas" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-4">
                 <div class="flex justify-between items-center border-b pb-3">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-700">Consolidado General de Pasivos</h3>
-                        <p class="text-xs text-slate-400">Datos extraídos de tu plantilla base</p>
+                        <h3 class="text-lg font-bold text-slate-700">💳 Catálogo y Control de Pasivos</h3>
+                        <p class="text-xs text-slate-400">Presiona "Pagar / Abonar" para hacer un cargo real a tu cuenta</p>
                     </div>
                     <button onclick="openAddDeudaGeneralModal()" class="bg-indigo-600 text-white font-medium text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
-                        + Nueva Deuda
+                        + Agregar Nueva Cuenta
                     </button>
                 </div>
 
@@ -139,71 +116,89 @@
                     <table class="w-full text-left text-sm">
                         <thead>
                             <tr class="text-slate-400 font-medium border-b bg-slate-50">
-                                <th class="p-3">Acreedor / Concepto</th>
-                                <th class="p-3 text-right">Monto Total Inicial</th>
-                                <th class="p-3 text-right">Total Pagado</th>
+                                <th class="p-3">Acreedor / Cuenta</th>
+                                <th class="p-3 text-right">Monto Inicial</th>
+                                <th class="p-3 text-right">Total Abonado Real</th>
                                 <th class="p-3 text-right">Saldo Faltante</th>
-                                <th class="p-3 text-center">Acciones</th>
+                                <th class="p-3 text-center">Acciones Rápidas</th>
                             </tr>
                         </thead>
                         <tbody id="table-deudas-generales" class="divide-y divide-slate-100"></tbody>
                     </table>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-center">
-                    <div class="bg-slate-50 p-3 rounded-lg"><p class="text-xs text-slate-400 font-medium">Deuda Histórica Agrupada</p><span class="text-lg font-bold text-slate-700" id="dg-total">$0.00</span></div>
-                    <div class="bg-emerald-50/50 p-3 rounded-lg"><p class="text-xs text-emerald-600 font-medium">Suma Total Liquidada</p><span class="text-lg font-bold text-emerald-600" id="dg-pagado">$0.00</span></div>
-                    <div class="bg-rose-50 p-3 rounded-lg"><p class="text-xs text-rose-600 font-medium">Pasivo Neto Pendiente</p><span class="text-lg font-bold text-rose-600" id="dg-faltante">$0.00</span></div>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <!-- MODAL DE ENTRADAS DE DATOS (REUTILIZABLE) -->
-    <div id="modal-conceptos" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div id="modal-transaction" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white max-w-sm w-full rounded-xl shadow-xl border p-6 space-y-4">
-            <h3 class="text-lg font-bold text-slate-700" id="modal-title">Agregar Registro</h3>
-            <input type="hidden" id="modal-category">
+            <h3 class="text-lg font-bold text-slate-700" id="tx-modal-title">Registrar Movimiento</h3>
+            <input type="hidden" id="tx-type">
             <div class="space-y-3">
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Nombre o Descripción</label>
-                    <input type="text" id="input-label" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Mes correspondiente</label>
+                    <select id="tx-month" class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+                        <option value="3">Abril</option><option value="4" selected>Mayo</option><option value="5">Junio</option>
+                        <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+                        <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+                    </select>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 block mb-1">Presupuestado ($)</label>
-                        <input type="number" id="input-budget" value="0" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 block mb-1">Monto Real ($)</label>
-                        <input type="number" id="input-real" value="0" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Concepto o Descripción</label>
+                    <input type="text" id="tx-label" placeholder="Ej. Pago Quincena o Súper" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto ($)</label>
+                    <input type="number" id="tx-amount" value="0" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeModal('modal-conceptos')" class="px-4 py-2 border rounded-lg text-sm text-slate-500 hover:bg-slate-50">Cancelar</button>
-                <button onclick="saveRowItem()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Guardar</button>
+                <button onclick="closeModal('modal-transaction')" class="px-4 py-2 border rounded-lg text-sm text-slate-500 hover:bg-slate-50">Cancelar</button>
+                <button onclick="saveTransaction()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Guardar Registro</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL PARA AGREGAR DEUDA GENERAL -->
+    <div id="modal-abono" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white max-w-sm w-full rounded-xl shadow-xl border p-6 space-y-4">
+            <h3 class="text-lg font-bold text-slate-700">Registrar Pago a Deuda</h3>
+            <input type="hidden" id="abono-deuda-idx">
+            <div class="space-y-3">
+                <p class="text-sm text-slate-500 font-medium" id="abono-deuda-name">Cuenta: </p>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Mes en el que se efectúa el pago</label>
+                    <select id="abono-month" class="w-full border rounded-lg px-3 py-2 text-sm">
+                        <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+                        <option value="3">Abril</option><option value="4" selected>Mayo</option><option value="5">Junio</option>
+                        <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+                        <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto a abonar ($)</label>
+                    <input type="number" id="abono-amount" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal('modal-abono')" class="px-4 py-2 border rounded-lg text-slate-500 text-sm hover:bg-slate-50">Cancelar</button>
+                <button onclick="executeAbono()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">Confirmar Pago</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-deuda-general" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white max-w-sm w-full rounded-xl shadow-xl border p-6 space-y-4">
-            <h3 class="text-lg font-bold text-slate-700">Añadir Pasivo General</h3>
+            <h3 class="text-lg font-bold text-slate-700">Nueva Cuenta de Deuda</h3>
             <div class="space-y-3">
                 <div>
                     <label class="text-xs font-bold text-slate-500 block mb-1">Acreedor / Cuenta</label>
-                    <input type="text" id="dg-input-label" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="dg-input-label" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto Total Inicial</label>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto Inicial Adeudado</label>
                     <input type="number" id="dg-input-total" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">Monto ya Pagado</label>
-                    <input type="number" id="dg-input-pagado" class="w-full border rounded-lg px-3 py-2 text-sm outline-none">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
@@ -214,183 +209,188 @@
     </div>
 
     <footer class="bg-slate-100 border-t mt-12 py-4 text-center text-xs text-slate-400">
-        Stefy 2026 Financial Planner &bull; Datos persistidos en LocalStorage.
+        Stefy 2026 Financial Planner &bull; Sistema Transaccional Real.
     </footer>
 
     <script>
-        // Sincronización exacta con los valores reales de tu documento "Stefy 2026.xlsx"
+        const nombreMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+        // Datos cargados por defecto basados directamente en tu Excel real
         const defaultData = {
             deudasGenerales: [
-                { id: 1, name: "AUTO", total: 100000, pagado: 31000 },
-                { id: 2, name: "LIVERPOOL", total: 21925, pagado: 9000 },
-                { id: 3, name: "PRESTAMO", total: 63208.23, pagado: 45571 },
-                { id: 4, name: "BANQUETERA", total: 134000, pagado: 0 },
-                { id: 5, name: "TDC NU", total: 11665.99, pagado: 0 },
-                { id: 6, name: "TDC VISA", total: 1031, pagado: 0 },
-                { id: 7, name: "TDC MERCADO", total: 6077, pagado: 0 }
+                { name: "AUTO", total: 100000, pagado: 31000 },
+                { name: "LIVERPOOL", total: 21925, pagado: 9000 },
+                { name: "PRESTAMO", total: 63208.23, pagado: 45571 },
+                { name: "BANQUETERA", total: 134000, pagado: 0 },
+                { name: "TDC NU", total: 11665.99, pagado: 0 },
+                { name: "TDC VISA", total: 1031, pagado: 0 },
+                { name: "TDC MERCADO", total: 6077, pagado: 0 }
             ],
-            meses: Array.from({ length: 12 }, (_, i) => ({
-                ingresos: i === 4 ? 26087.86 : 16000, // Mayo tiene tus ingresos reales registrados
-                rows: i === 4 ? [
-                    { category: "Gastos Fijos", label: "Gastos Fijos Planificados", budget: 11500, real: 11500 },
-                    { category: "Deudas", label: "Amortizaciones del mes", budget: 6166, real: 6164.73 }
-                ] : [
-                    { category: "Gastos Fijos", label: "Gastos Fijos Estimados", budget: 12000, real: 0 },
-                    { category: "Deudas", label: "Pago Mínimo Tarjetas", budget: 1031, real: 0 }
-                ]
-            }))
+            // Registro inicial simulando tus saldos de Mayo reales del excel
+            transacciones: [
+                { month: 4, type: 'Ingreso', label: 'Ingresos Mensuales Registrados', amount: 26087.86 },
+                { month: 4, type: 'Gasto', label: 'Gastos Fijos Consolidados', amount: 11500 },
+                { month: 4, type: 'Deuda', label: 'Amortización de Deudas (Mayo)', amount: 6164.73 }
+            ]
         };
 
-        let appData = JSON.parse(localStorage.getItem('stefy_budget_2026')) || defaultData;
+        let appData = JSON.parse(localStorage.getItem('stefy_transactional_2026')) || defaultData;
         let chartInstance = null;
 
         function saveToStorage() {
-            localStorage.setItem('stefy_budget_2026', JSON.stringify(appData));
+            localStorage.setItem('stefy_transactional_2026', JSON.stringify(appData));
             updateAllViews();
         }
 
-        // Cambio de pestaña arreglado sin dependencias externas
         function switchTab(tabId) {
             document.getElementById('section-resumen').classList.add('hidden');
-            document.getElementById('section-meses').classList.add('hidden');
+            document.getElementById('section-transacciones').classList.add('hidden');
             document.getElementById('section-deudas').classList.add('hidden');
             
             document.getElementById(`section-${tabId}`).classList.remove('hidden');
             
-            const tabs = ['resumen', 'meses', 'deudas'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`btn-${t}`);
-                btn.className = "hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition";
+            ['resumen', 'transacciones', 'deudas'].forEach(t => {
+                document.getElementById(`btn-${t}`).className = "hover:bg-indigo-600 text-indigo-100 px-4 py-2 rounded-lg font-medium transition";
             });
-            
             document.getElementById(`btn-${tabId}`).className = "bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium transition";
             
-            if (tabId === 'resumen') {
-                renderCharts();
-            }
+            if (tabId === 'resumen') renderCharts();
         }
 
         const fCurrency = num => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num);
 
         function updateAllViews() {
-            let totIngresos = 0, totFijos = 0, totDeudas = 0;
-            appData.meses.forEach(m => {
-                totIngresos += m.ingresos;
-                m.rows.forEach(r => {
-                    if(r.category === 'Gastos Fijos') totFijos += r.real;
-                    if(r.category === 'Deudas') totDeudas += r.real;
-                });
+            const filtroMes = document.getElementById('resumen-month-selector').value;
+            
+            let totIngresos = 0, totGastos = 0, totDeudas = 0;
+
+            // Filtrar transacciones para las tarjetas/resúmenes superiores
+            appData.transacciones.forEach(t => {
+                if (filtroMes === 'todos' || t.month == filtroMes) {
+                    if (t.type === 'Ingreso') totIngresos += t.amount;
+                    if (t.type === 'Gasto') totGastos += t.amount;
+                    if (t.type === 'Deuda') totDeudas += t.amount;
+                }
             });
 
-            document.getElementById('ann-ingresos').innerText = fCurrency(totIngresos);
-            document.getElementById('ann-fijos').innerText = fCurrency(totFijos);
-            document.getElementById('ann-deudas').innerText = fCurrency(totDeudas);
-            document.getElementById('ann-balance').innerText = fCurrency(totIngresos - (totFijos + totDeudas));
+            document.getElementById('card-ingresos').innerText = fCurrency(totIngresos);
+            document.getElementById('card-gastos').innerText = fCurrency(totGastos);
+            document.getElementById('card-deudas').innerText = fCurrency(totDeudas);
+            document.getElementById('card-disponible').innerText = fCurrency(totIngresos - (totGastos + totDeudas));
 
-            // Renderizar Sección Deudas
+            // Renderizar Bitácora de Transacciones
+            const tbodyTX = document.getElementById('table-transactions');
+            tbodyTX.innerHTML = '';
+            appData.transacciones.forEach((t, idx) => {
+                let badgeColor = t.type === 'Ingreso' ? 'bg-emerald-100 text-emerald-800' : (t.type === 'Gasto' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800');
+                tbodyTX.innerHTML += `
+                    <tr>
+                        <td class="p-3 font-medium">${nombreMeses[t.month]}</td>
+                        <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${badgeColor}">${t.type}</span></td>
+                        <td class="p-3 text-slate-700">${t.label}</td>
+                        <td class="p-3 text-right font-mono font-bold">${fCurrency(t.amount)}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteTransaction(${idx})" class="text-rose-500 hover:text-rose-700 font-medium">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // Renderizar Deudas con su nuevo Botón de Pago Activo
             const tbodyDG = document.getElementById('table-deudas-generales');
             tbodyDG.innerHTML = '';
-            let dgTotal = 0, dgPagado = 0, dgFaltante = 0;
-
             appData.deudasGenerales.forEach((d, idx) => {
                 let faltante = d.total - d.pagado;
-                dgTotal += d.total; dgPagado += d.pagado; dgFaltante += faltante;
-
                 tbodyDG.innerHTML += `
                     <tr>
                         <td class="p-3 font-semibold text-slate-700">${d.name}</td>
-                        <td class="p-3 text-right text-slate-600">${fCurrency(d.total)}</td>
+                        <td class="p-3 text-right text-slate-500">${fCurrency(d.total)}</td>
                         <td class="p-3 text-right text-emerald-600 font-medium">${fCurrency(d.pagado)}</td>
-                        <td class="p-3 text-right text-rose-600 font-semibold">${fCurrency(faltante)}</td>
-                        <td class="p-3 text-center">
-                            <button onclick="deleteDeudaGeneral(${idx})" class="text-rose-500 hover:text-rose-700 font-medium">Eliminar</button>
+                        <td class="p-3 text-right text-rose-600 font-bold">${fCurrency(faltante)}</td>
+                        <td class="p-3 flex justify-center gap-2">
+                            <button onclick="openAbonoModal(${idx})" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold px-3 py-1.5 rounded-lg text-xs transition">
+                                💸 Pagar / Abonar
+                            </button>
+                            <button onclick="deleteDeudaGeneral(${idx})" class="text-slate-300 hover:text-rose-600 p-1 text-xs">Eliminar</button>
                         </td>
                     </tr>
                 `;
             });
-            document.getElementById('dg-total').innerText = fCurrency(dgTotal);
-            document.getElementById('dg-pagado').innerText = fCurrency(dgPagado);
-            document.getElementById('dg-faltante').innerText = fCurrency(dgFaltante);
-
-            loadMonthData();
         }
 
-        function loadMonthData() {
-            const mIdx = document.getElementById('month-selector').value;
-            const month = appData.meses[mIdx];
-            
-            const tFijos = document.getElementById('table-fijos');
-            const tDeudas = document.getElementById('table-deudas-mes');
-            tFijos.innerHTML = ''; tDeudas.innerHTML = '';
+        // CONTROL DE MODAL PARA INGRESOS / GASTOS
+        function openTransactionModal(type) {
+            document.getElementById('tx-type').value = type;
+            document.getElementById('tx-modal-title').innerText = `Registrar ${type}`;
+            document.getElementById('tx-label').value = '';
+            document.getElementById('tx-amount').value = '';
+            document.getElementById('modal-transaction').classList.remove('hidden');
+        }
 
-            let budgetTotal = 0, realTotal = 0;
+        function saveTransaction() {
+            const type = document.getElementById('tx-type').value;
+            const month = parseInt(document.getElementById('tx-month').value);
+            const label = document.getElementById('tx-label').value || `Movimiento de ${type}`;
+            const amount = parseFloat(document.getElementById('tx-amount').value) || 0;
 
-            month.rows.forEach((r, idx) => {
-                budgetTotal += r.budget;
-                realTotal += r.real;
-                const rowHtml = `
-                    <tr>
-                        <td class="py-2.5 font-medium text-slate-700">${r.label}</td>
-                        <td class="py-2.5 text-right font-mono">${fCurrency(r.budget)}</td>
-                        <td class="py-2.5 text-right font-mono text-indigo-600 font-semibold">${fCurrency(r.real)}</td>
-                        <td class="py-2.5 text-center">
-                            <button onclick="deleteMonthRow(${mIdx}, ${idx})" class="text-rose-500 hover:text-rose-700 font-medium">✖</button>
-                        </td>
-                    </tr>
-                `;
-                if(r.category === 'Gastos Fijos') tFijos.innerHTML += rowHtml;
-                else if(r.category === 'Deudas') tDeudas.innerHTML += rowHtml;
+            appData.transacciones.push({ month, type, label, amount });
+            closeModal('modal-transaction');
+            saveToStorage();
+        }
+
+        function deleteTransaction(idx) {
+            appData.transacciones.splice(idx, 1);
+            saveToStorage();
+        }
+
+        // NUEVA FUNCIÓN COMPLETA: PROCESAR EL BOTÓN DE PAGAR DEUDAS
+        function openAbonoModal(idx) {
+            const deuda = appData.deudasGenerales[idx];
+            document.getElementById('abono-deuda-idx').value = idx;
+            document.getElementById('abono-deuda-name').innerText = `Cuenta destino: ${deuda.name} (Saldo actual: ${fCurrency(deuda.total - deuda.pagado)})`;
+            document.getElementById('abono-amount').value = '';
+            document.getElementById('modal-abono').classList.remove('hidden');
+        }
+
+        function executeAbono() {
+            const idx = document.getElementById('abono-deuda-idx').value;
+            const month = parseInt(document.getElementById('abono-month').value);
+            const amount = parseFloat(document.getElementById('abono-amount').value) || 0;
+
+            if(amount <= 0) return alert("Por favor ingresa un monto válido.");
+
+            // 1. Modifica la deuda histórica reduciendo el saldo faltante
+            appData.deudasGenerales[idx].pagado += amount;
+
+            // 2. Crea en automático el registro de salida en el mes seleccionado
+            appData.transacciones.push({
+                month: month,
+                type: 'Deuda',
+                label: `Abono a cuenta: ${appData.deudasGenerales[idx].name}`,
+                amount: amount
             });
 
-            document.getElementById('month-budget-total').innerText = fCurrency(budgetTotal);
-            document.getElementById('month-real-total').innerText = fCurrency(realTotal);
-        }
-
-        function openAddRowModal(category) {
-            document.getElementById('modal-category').value = category;
-            document.getElementById('modal-title').innerText = `Nuevo Item: ${category}`;
-            document.getElementById('input-label').value = '';
-            document.getElementById('input-budget').value = 0;
-            document.getElementById('input-real').value = 0;
-            document.getElementById('modal-conceptos').classList.remove('hidden');
-        }
-
-        function saveRowItem() {
-            const mIdx = document.getElementById('month-selector').value;
-            const category = document.getElementById('modal-category').value;
-            const label = document.getElementById('input-label').value || "Concepto General";
-            const budget = parseFloat(document.getElementById('input-budget').value) || 0;
-            const real = parseFloat(document.getElementById('input-real').value) || 0;
-
-            appData.meses[mIdx].rows.push({ category, label, budget, real });
-            closeModal('modal-conceptos');
+            closeModal('modal-abono');
             saveToStorage();
         }
 
-        function deleteMonthRow(mIdx, rIdx) {
-            appData.meses[mIdx].rows.splice(rIdx, 1);
-            saveToStorage();
-        }
-
+        // AGREGAR CUENTAS NUEVAS
         function openAddDeudaGeneralModal() {
             document.getElementById('dg-input-label').value = '';
             document.getElementById('dg-input-total').value = '';
-            document.getElementById('dg-input-pagado').value = '';
             document.getElementById('modal-deuda-general').classList.remove('hidden');
         }
 
         function saveDeudaGeneral() {
-            const name = document.getElementById('dg-input-label').value || "Acreedor";
+            const name = document.getElementById('dg-input-label').value || "Nuevo Acreedor";
             const total = parseFloat(document.getElementById('dg-input-total').value) || 0;
-            const pagado = parseFloat(document.getElementById('dg-input-pagado').value) || 0;
-
-            appData.deudasGenerales.push({ id: Date.now(), name, total, pagado });
+            appData.deudasGenerales.push({ name, total, pagado: 0 });
             closeModal('modal-deuda-general');
             saveToStorage();
         }
 
         function deleteDeudaGeneral(idx) {
-            if(confirm("¿Deseas eliminar este registro de deuda?")) {
+            if(confirm("¿Eliminar esta cuenta del catálogo?")) {
                 appData.deudasGenerales.splice(idx, 1);
                 saveToStorage();
             }
@@ -398,31 +398,32 @@
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+        // GRÁFICO ACTUALIZADO PARA SEGUIMIENTO TRANSACCIONAL REAL
         function renderCharts() {
-            const canvas = document.getElementById('chartResumenAnual');
+            const canvas = document.getElementById('chartFlujoReal');
             if(!canvas) return;
             const ctx = canvas.getContext('2d');
             
-            const labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            const datosPresupuesto = Array(12).fill(0);
-            const datosReal = Array(12).fill(0);
+            const ingMensuales = Array(12).fill(0);
+            const egMensuales = Array(12).fill(0);
 
-            appData.meses.forEach((m, idx) => {
-                m.rows.forEach(r => {
-                    datosPresupuesto[idx] += r.budget;
-                    datosReal[idx] += r.real;
-                });
+            appData.transacciones.forEach(t => {
+                if (t.type === 'Ingreso') {
+                    ingMensuales[t.month] += t.amount;
+                } else {
+                    egMensuales[t.month] += t.amount; // Suma gastos comunes y abonos de deuda como egreso
+                }
             });
 
             if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: labels,
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                     datasets: [
-                        { label: 'Presupuestado Máx', data: datosPresupuesto, backgroundColor: '#cbd5e1' },
-                        { label: 'Gasto Real Efectuado', data: datosReal, backgroundColor: '#6366f1' }
+                        { label: 'Ingresos Reales', data: ingMensuales, borderColor: '#10b981', tension: 0.3, fill: false },
+                        { label: 'Egresos Totales (Gastos + Pagos)', data: egMensuales, borderColor: '#f59e0b', tension: 0.3, fill: false }
                     ]
                 },
                 options: {
